@@ -8,6 +8,8 @@
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
+
+#include "common.h"
 #include "config.h"
 
 
@@ -17,13 +19,25 @@ int main(int argc, char** argv){
    int on;
    int SERVER_PORT=7777;
    int sent_len;
+   int updt_chunk_id;
+
+   if(argc!=2){
+
+	printf("./client_size chunk_id!\n");
+	exit(0);
+
+   	}
+
+   updt_chunk_id=atoi(argv[1]);
+
+   printf("updt_chunk_id=%d\n", updt_chunk_id);
 
    char* server_ip="192.168.0.18"; //node8 is the server
 
    TRANSMIT_DATA* td=malloc(sizeof(TRANSMIT_DATA));
 
    // initiate td for example
-   td->chunk_id=66;
+   td->chunk_id=updt_chunk_id;
    td->data_type=1;
    memset(td->buff,'1',chunk_size);
 

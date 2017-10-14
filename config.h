@@ -9,7 +9,6 @@
 #define test_times 20 // the iteration steps
 #define upper 9999999
 
-#define BUFFER_SIZE 1024*16 // the buffer size in socket communication is set as 16KB
 #define chunk_size 1024*64 // suppose the chunk size is 16MB
 #define string_len 100
 #define w 8

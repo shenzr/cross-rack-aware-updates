@@ -11,6 +11,12 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include "common.h"
 #include "config.h"
 
 typedef struct _thread_argu {
@@ -19,12 +25,11 @@ typedef struct _thread_argu {
 }THREAD_ARGU;
 
 
-#define max_log_chunk_cnt 1024*512
-
-#define bucket_num max_log_chunk_cnt/(1024*2)
+#define max_log_chunk_cnt 20
+#define bucket_num 4
 #define entry_per_bucket max_log_chunk_cnt/bucket_num
 
-int* newest_chunk_log_order=malloc(sizeof(int)*bucket_num*entry_per_bucket*2);//it records the mapping between the newest version of chunk_id and the logged order;
+int newest_chunk_log_order[max_log_chunk_cnt*2];//it records the mapping between the newest version of chunk_id and the logged order;
                                                   //chunk_id stored are sored in ascending order
 
 int log_chunk_cnt; //it records the number of chunks logged
@@ -78,8 +83,30 @@ void update_loged_chunks(int given_chunk_id){
    	}
 
    // record the given_chunk_id
+   newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i]=given_chunk_id;
    newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i+1]=log_chunk_cnt;
-   
+
+/*
+   printf("updated_bucket_record:\n");
+   for(i=0; i<entry_per_bucket; i++){
+
+	for(j=0; j<bucket_num; j++)
+		printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2]);
+
+	printf("\n");
+   	}
+
+   printf("\n");
+
+   printf("log_cnt:\n");
+   for(i=0; i<entry_per_bucket; i++){
+
+    for(j=0; j<bucket_num; j++)
+	 printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2+1]);
+
+    printf("\n");
+   }
+*/
 }
 
 
@@ -88,29 +115,33 @@ void update_loged_chunks(int given_chunk_id){
 // update the offset of the wrtten chunk 
 void* log_write(void *ptr){
 
-   THREAD_ARGU ta=*(THREAD_ARGU *)ptr;
+   TRANSMIT_DATA td=*(TRANSMIT_DATA*)ptr;
 
-   int connfd=ta.connfd;
-   int svc_id=ta.srv_id;
    int ret;
    int log_order;
    int position;
 
-   //append the data into a log file, record the offset 
-   FILE* fd=open("log_file","a");
+   //validate the data 
+   printf("recv: td->chunk_id=%d\n", td.chunk_id);
+   printf("recv: td->data_type=%d\n", td.data_type);
 
-   //offset can be obtained from the chunk_log_file_record mapping
-   ret=fwrite(fd, td->buff, chunk_size);
+   //memcpy(write_buff, &td.buff, chunk_size);
+
+   //specify fd at the bottom of the file
+   int fd=open("log_file", O_RDWR|O_CREAT, 0644);
+   lseek(fd, 0, SEEK_END);
+
+   ret=write(fd, td.buff, chunk_size);
    if(ret!=chunk_size)
-   	printf("write_log_file_error!\n");
+   	printf("write_log_file_error! ret=%d\n",ret);
 
    log_order=log_chunk_cnt; // record the log order
    log_chunk_cnt++;
 
-   update_loged_chunks(td->chunk_id); //find the position in newest_chunk_log_order and update the log order
+   update_loged_chunks(td.chunk_id); //find the position in newest_chunk_log_order and update the log order
    
-   fclose(fd);
-   close(connfd);
+   
+   close(fd);
 
 }
 
@@ -185,17 +216,17 @@ int main(int argc, char** argv){
 
     //init the hash_bucket
 	log_chunk_cnt=0;
-	memset(newest_chunk_log_order, -1, max_log_chunk_cnt*2);
+	memset(newest_chunk_log_order, -1, sizeof(int)*max_log_chunk_cnt*2);
 
     //init the recv info
     TRANSMIT_DATA* td = malloc(sizeof(TRANSMIT_DATA));
 	char *recv_buff = malloc(sizeof(TRANSMIT_DATA));
+	ta = (THREAD_ARGU*)malloc(sizeof(THREAD_ARGU));
 
 	while(1){
 		connfd = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
 		printf("receive connection from %s\n",inet_ntoa(sender_addr.sin_addr));
 		
-		ta = (THREAD_ARGU*)malloc(sizeof(THREAD_ARGU));
 		ta->connfd = connfd;
 		srv_cnt++;
 		ta->srv_id = srv_cnt;
@@ -218,7 +249,7 @@ int main(int argc, char** argv){
 
        //case#1:if it is new data, then log it
 	   if(td->data_type==1)
-		   pthread_create(&tid,NULL,log_write,ta);
+		   pthread_create(&tid,NULL,log_write,td);
 	   
        // case #2: partial_encoding
        // pthread_create(&tid,NULL,partial_encoding,ta);
@@ -227,6 +258,7 @@ int main(int argc, char** argv){
 
 	free(td);
 	free(recv_buff);
+	free(ta);
 
 
   	return 0;
