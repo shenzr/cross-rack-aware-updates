@@ -1,8 +1,9 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define total_nodes_num 10
 #define data_chunks 4
-#define num_chunks 7 //n in erasure coding
+#define num_chunks_in_stripe 7 //n in erasure coding
 #define rack_num 3
 #define stripe_num 100
 #define test_times 20 // the iteration steps
@@ -16,6 +17,7 @@
 
 typedef struct _transmit_data{
 	int chunk_id;
+	int data_type; //new data or data_delta
 	char buff[chunk_size];
 }TRANSMIT_DATA;
 

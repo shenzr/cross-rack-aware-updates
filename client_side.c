@@ -16,6 +16,7 @@ int main(int argc, char** argv){
    int ret;
    int on;
    int SERVER_PORT=7777;
+   int sent_len;
 
    char* server_ip="192.168.0.18"; //node8 is the server
 
@@ -23,6 +24,7 @@ int main(int argc, char** argv){
 
    // initiate td for example
    td->chunk_id=66;
+   td->data_type=1;
    memset(td->buff,'1',chunk_size);
 
    //set client_addr info
@@ -72,11 +74,19 @@ int main(int argc, char** argv){
 
    printf("connect success!\n");
 
-   ret=write(client_socket,td,sizeof(TRANSMIT_DATA));
-   if(ret!=sizeof(TRANSMIT_DATA))
-   	printf("ret=%d, size_should=%d, write data error!\n", ret, sizeof(TRANSMIT_DATA));
+   //init sent_buff
+   char *sent_buff=malloc(sizeof(TRANSMIT_DATA));
+   memcpy(sent_buff,td,sizeof(TRANSMIT_DATA));
+
+   sent_len=0;
+
+   while(sent_len < sizeof(TRANSMIT_DATA)){
+      ret=write(client_socket, sent_buff+sent_len, sizeof(TRANSMIT_DATA));
+	  sent_len+=ret;
+   	}
    
    free(td);
+   free(sent_buff);
 
 }
 
