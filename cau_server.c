@@ -119,7 +119,7 @@ void cau_server_updte(TRANSMIT_DATA* td){
 	
 	send_data(td, td->sent_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
-	//printf("send_updt_data to: ");
+	printf("send_updt_data to: ");
 	print_amazon_vm_info(td->sent_ip);
 
 	ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));

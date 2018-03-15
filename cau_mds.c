@@ -520,105 +520,71 @@ void cau_estbh_log_map(){
 	int k,h;
 	int r;
 	int its_node_id;
+	int prty_nd_id;
 	int its_rack_id;
 	int dt_rack_id;
 	int prty_rack_id;
-
-
 	int min_load;
 	int slct_prty_id;
+    int expect_rack_id;
 
-	int map_load[num_chunks_in_stripe-data_chunks]; //it records the number of logs to each parity chunk
+	int map_priority[rack_num][rack_num]; //it records the bandwidth among racks, we select the parity rack with maximum bandwidth for the rack stores updated data
+
+	map_priority[0][0]=0;
+	map_priority[0][1]=1;
+	map_priority[0][2]=3;
+	map_priority[0][3]=2;
+
+	map_priority[1][0]=0;
+	map_priority[1][1]=1;
+	map_priority[1][2]=2;
+	map_priority[1][3]=3;
+
+	map_priority[2][0]=0;
+	map_priority[2][1]=1;
+	map_priority[2][2]=2;
+	map_priority[2][3]=3;
+
+	map_priority[3][0]=0;
+	map_priority[3][1]=2;
+	map_priority[3][2]=1;
+	map_priority[3][3]=3;
 
 	memset(prty_log_map, -1, sizeof(int)*stripe_num*data_chunks);
 
 	for(i=0; i<stripe_num; i++){
 
-		//printf("i=%d\n", i);
-		
-		memset(map_load, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
-		
-		//start from the rack with parity chunks 
-		for(r=0; r<rack_num; r++){
+		for(k=0; k<data_chunks; k++){
 
-            //locate the rack that has parity chunks
-			for(j=data_chunks; j<num_chunks_in_stripe; j++){
+			its_node_id=global_chunk_map[i*num_chunks_in_stripe+k];
+			its_rack_id=get_rack_id(its_node_id);
 
-				//locate its node and rack
-				its_node_id=global_chunk_map[i*num_chunks_in_stripe+j];
-				its_rack_id=get_rack_id(its_node_id);
+			//scan the parity chunks 
+			for(h=0; h<rack_num; h++){
 
-				if(its_rack_id==r)
+				if(h==its_rack_id)
+					continue;
+
+				expect_rack_id=map_priority[its_rack_id][h];
+
+				for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
+
+					prty_nd_id=global_chunk_map[i*num_chunks_in_stripe+data_chunks+j];
+					prty_rack_id=get_rack_id(prty_nd_id);
+
+					if(prty_rack_id==expect_rack_id){
+
+						prty_log_map[i*data_chunks+k]=data_chunks+j;
+						break;
+
+						}
+					}
+
+				if(prty_rack_id==expect_rack_id)
 					break;
 
 				}
-
-			//if there is no parity chunk in this rack, then continue
-			if(j==num_chunks_in_stripe)
-				continue;
-
-			//printf("%d-th rack has parity chunks\n", r);
-
-			//find the data chunks in this rack 
-			for(k=0; k<data_chunks; k++){
-
-				dt_rack_id=get_rack_id(global_chunk_map[i*num_chunks_in_stripe+k]);
-
-				if(dt_rack_id==r){
-
-					min_load=UPPBND;
-					
-					//find the approate parity in other racks
-					for(h=data_chunks; h<num_chunks_in_stripe; h++){
-
-						prty_rack_id=get_rack_id(global_chunk_map[i*num_chunks_in_stripe+h]);
-
-						//printf("h=%d, h_rack_id=%d, r=%d\n", h, prty_rack_id, r);
-
-						if(prty_rack_id!=r){
-
-							if(map_load[h-data_chunks]<min_load){
-								
-								slct_prty_id=h;
-								min_load=map_load[h-data_chunks];
-
-								//printf("slct_prty_id=%d, min_load=%d\n", slct_prty_id, min_load);
-
-								}
-							}
-						}
-
-					//update the map_load
-					prty_log_map[i*data_chunks+k]=slct_prty_id;
-					map_load[slct_prty_id-data_chunks]++;
-
-					}
-				}
 			}
-
-		for(j=0; j<data_chunks; j++){
-
-			if(prty_log_map[i*data_chunks+j]!=-1)
-				continue;
-
-            min_load=UPPBND;
-			//just need to scan the parity chunks and see their map_load 
-			for(k=data_chunks; k<num_chunks_in_stripe; k++){
-
-				if(map_load[k-data_chunks]<min_load){
-
-					min_load=map_load[k-data_chunks];
-					slct_prty_id=k;
-
-					}
-				}
-
-			//update the map_load
-			prty_log_map[i*data_chunks+j]=slct_prty_id;
-			map_load[slct_prty_id-data_chunks]++;
-
-			}
-
 		}
 
 
@@ -1189,7 +1155,6 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
 
    if(rack_id!=log_prty_rack_id)
    	cross_rack_updt_traff++;
-
 
    //select other cau_num_rplc-1 parity chunk for storing replications
    if(cau_num_rplc > 0){
