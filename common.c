@@ -64,7 +64,7 @@ void print_amazon_vm_info(char* node_ip){
 	int rack_id=get_rack_id(node_id);
 	int base=node_num_per_rack;
 
-	printf("node_ip=%s, rack_id=%d, node_id=%d\n", node_ip, rack_id, node_id);
+	//printf("node_ip=%s, rack_id=%d, node_id=%d\n", node_ip, rack_id, node_id);
 	printf("Region-%s, Node-%d\n", region_name[rack_id], node_id%base);
 
 }

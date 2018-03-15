@@ -356,6 +356,7 @@ void hot_cold_separation(int num_rcrd_strp){
 	slct_rack=find_max_array_index(rcd_rack_id, rack_num);
 	cddt_rack_id=find_none_zero_min_array_index(rcd_rack_id, rack_num, slct_rack);
 
+/*
     //if there is only one rack with updated data 
 	if(cddt_rack_id==-1){
 
@@ -410,7 +411,7 @@ void hot_cold_separation(int num_rcrd_strp){
 
 		}
 
-
+*/
 	//perform separation for the racks with max and min number of update chunks 
 	if(cddt_rack_id!=slct_rack){
 
@@ -696,31 +697,67 @@ void cau_commit(int num_rcrd_strp){
    //determine the rack_id that stores parity chunks
    //it denotes the number of racks that store parity chunks in CAU
    int prty_rack_num; 
-   prty_rack_num=ceil((num_chunks_in_stripe-data_chunks)/max_chunks_per_rack);
 
    CMD_DATA* tcd_prty=(CMD_DATA*)malloc(sizeof(CMD_DATA)*(num_chunks_in_stripe-data_chunks));
    CMD_DATA* tcd_dt = (CMD_DATA*)malloc(sizeof(CMD_DATA) * data_chunks);
 
    int* intnl_nds=(int*)malloc(sizeof(int)*rack_num); //record the internal nodes in each rack
+   int* updt_chnk_num_racks=(int*)malloc(sizeof(int)*rack_num); // it records the number of updated chunks in each rack
 
    pthread_t send_cmd_dt_thread[data_chunks];
    pthread_t send_cmd_prty_thread[num_chunks_in_stripe-data_chunks];
 
    //printf("mark_updt_stripes_tab:\n");
    //print_array(num_rcrd_strp, data_chunks+1, mark_updt_stripes_tab);
+  
+   int rack_has_prty[rack_num]; //count the distribution of parity chunks
    
-   int* prty_rack_array=(int*)malloc(sizeof(int)*prty_rack_num); // it records the rack_id that stores parity chunks
-   int* prty_num_in_racks=(int*)malloc(sizeof(int)*prty_rack_num); // it records the num of parity chunks in each parity rack
-   int* recv_delta_num=(int*)malloc(sizeof(int)*prty_rack_num); //it records the number of deltas received by the parity chunk in a rack
-   int* first_prty_node_array=(int*)malloc(sizeof(int)*prty_rack_num);
-
-   int* updt_chnk_num_racks=(int*)malloc(sizeof(int)*rack_num); // it records the number of updated chunks in each rack
-   int* commit_approach=(int*)malloc(sizeof(int)*rack_num*prty_rack_num); // it records the commit approach from rack-i to rack-j
-
    //commit the deltas stripe by stripe 
    for(i=0; i<num_rcrd_strp; i++){
 
-	  printf("i=%d, num_rcrd_strp=%d\n", i, num_rcrd_strp);
+	 printf("i=%d, num_rcrd_strp=%d\n", i, num_rcrd_strp);
+	 
+	 updt_stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
+	 //printf("\ncommit_stripe=%d\n", updt_stripe_id);
+
+	 printf("update_chunks:\n");
+	 for(j=0; j<data_chunks; j++)
+	 	printf("%d ", mark_updt_stripes_tab[i*(data_chunks+1)+j+1]);
+	 printf("\n");
+
+	 printf("%d-th chunk_map:\n", updt_stripe_id);
+	 for(j=0; j<num_chunks_in_stripe; j++)
+	 	printf("%d ", global_chunk_map[updt_stripe_id*num_chunks_in_stripe+j]);
+	 printf("\n");
+
+	 memset(rack_has_prty, 0, sizeof(int)*rack_num);
+
+	 //determine the value of prty_rack_num
+	 for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
+
+		global_chunk_id=updt_stripe_id*num_chunks_in_stripe+data_chunks+j;
+		prty_node_id=global_chunk_map[global_chunk_id];
+		prty_rack_id=get_rack_id(prty_node_id);
+
+		rack_has_prty[prty_rack_id]++;
+		
+	 	}
+
+	 prty_rack_num=0;
+	 for(j=0; j<rack_num; j++)
+	 	if(rack_has_prty[j]>=1)
+			prty_rack_num++;
+
+	  printf("rack_has_prty:\n");
+	  print_array(1, rack_num, rack_has_prty);
+
+	  printf("prty_rack_num=%d\n", prty_rack_num);
+
+	  int* prty_rack_array=(int*)malloc(sizeof(int)*prty_rack_num); // it records the rack_id that stores parity chunks
+	  int* prty_num_in_racks=(int*)malloc(sizeof(int)*prty_rack_num); // it records the num of parity chunks in each parity rack
+	  int* recv_delta_num=(int*)malloc(sizeof(int)*prty_rack_num); //it records the number of deltas received by the parity chunk in a rack
+	  int* first_prty_node_array=(int*)malloc(sizeof(int)*prty_rack_num);
+	  int* commit_approach=(int*)malloc(sizeof(int)*rack_num*prty_rack_num); // it records the commit approach from rack-i to rack-j
 
 	  //printf("\nupdate_stripe_id=%d, num_rcrd_strp=%d\n", i, num_rcrd_strp);
 	  memset(prty_rack_array, -1, sizeof(int)*prty_rack_num);
@@ -732,41 +769,35 @@ void cau_commit(int num_rcrd_strp){
 
 	  gettimeofday(&be_time, NULL);
 
-	  updt_stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
-	  //printf("\ncommit_stripe=%d\n", updt_stripe_id);
-
 	  index=0;
 
 	  //establish the rack_ids that store parity chunks
 	  //record the num of parity chunks in each parity rack
-	  for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
+	  for(j=0; j<rack_num; j++){
 
-		 global_chunk_id=updt_stripe_id*num_chunks_in_stripe+data_chunks+j;
-		 prty_node_id=global_chunk_map[global_chunk_id];
-		 prty_rack_id=get_rack_id(prty_node_id);
+		if(rack_has_prty[j]>=1){
 
-		 for(k=0; k<index; k++){
-
-			if(prty_rack_array[k]==prty_rack_id)
-				prty_num_in_racks[k]++;
-
-		 	}
-
-		 if(k>=index){
-
-			prty_rack_array[k]=prty_rack_id;
-			prty_num_in_racks[k]++;
+			prty_rack_array[index]=j;
+			prty_num_in_racks[index]=rack_has_prty[j];
 			index++;
 
-		 	}
-
+			}
 	  	}
 
-	  //determine the first data chunk in the related racks that stores data chunks
+	  printf("prty_rack_array:\n");
+	  print_array(1, prty_rack_num, prty_rack_array);
+	  
+	  printf("prty_num_in_racks:\n");
+	  print_array(1, prty_rack_num, prty_num_in_racks);
+
+	  //determine the first updated data chunk in the related racks that stores data chunks
 	  //notice that it is not the first data node
 	  memset(intnl_nds, -1, sizeof(int)*rack_num);
 	  
 	  for(j=0; j<data_chunks; j++){
+
+		if(mark_updt_stripes_tab[i*(data_chunks+1)+j+1]==-1)
+			continue;
 
 		global_chunk_id=updt_stripe_id*num_chunks_in_stripe+j;
 		node_id=global_chunk_map[global_chunk_id];
@@ -777,11 +808,17 @@ void cau_commit(int num_rcrd_strp){
 		
 	  	}
 
+	  printf("intnl_nds:\n");
+	  print_array(1, rack_num, intnl_nds);
+	  printf("\n");
+
 	  //store the node that stores the first parity chunk in the given rack and stripe
 	  for(j=0; j<prty_rack_num; j++)
 	  	first_prty_node_array[j]=get_first_prty_nd_id(prty_rack_array[j], updt_stripe_id);
-	  
 
+	  printf("first_prty_node_array:\n");
+	  print_array(1, prty_rack_num, first_prty_node_array);	  
+	  
 	  //scan each updated chunk and record the number of updated chunks in each rack
       for(k=0; k<data_chunks; k++){
 
@@ -794,6 +831,9 @@ void cau_commit(int num_rcrd_strp){
 		  updt_chnk_num_racks[updt_rack_id]++;
 
 	  	}
+
+	  printf("updt_chnk_num_racks:\n");
+	  print_array(1, rack_num, updt_chnk_num_racks);
 
 	  //determine the number of deltas to be received for each parity chunk 
 	  for(j=0; j<prty_rack_num; j++){
@@ -815,7 +855,7 @@ void cau_commit(int num_rcrd_strp){
 
 			else if ((updt_chnk_num_racks[k] >= prty_num_in_racks[j]) && (k!=prty_rack_id)){
 				
-				recv_delta_num[j] ++;
+				recv_delta_num[j] ++; 
 				commit_approach[k*prty_rack_num+prty_rack_id]=PARITY_DELTA_APPR;
 				
 				}
@@ -827,6 +867,9 @@ void cau_commit(int num_rcrd_strp){
 
 			}
 		}
+
+	  printf("recv_delta_num:\n");
+	  print_array(1, prty_rack_num, recv_delta_num);	
 
 	  //update cross_rack_updt_traff 
 	  for(k=0; k<rack_num; k++){
@@ -909,6 +952,10 @@ void cau_commit(int num_rcrd_strp){
 		node_id=global_chunk_map[dt_global_chunk_id];
 		rack_id=get_rack_id(node_id);
 
+		printf("--data node: ");
+		print_amazon_vm_info(node_ip_set[node_id]);
+		printf("\n");
+
 		//get the number of update chunks in rack_id
 		updt_chunk_num=updt_chnk_num_racks[rack_id];
 		//printf("rack_id=%d, updt_chunk_num=%d\n", rack_id, updt_chunk_num);
@@ -958,6 +1005,7 @@ void cau_commit(int num_rcrd_strp){
 				//printf("Parity-Delta_Approach: stripe_id=%d\n", updt_stripe_id);
 				
 				tcd_dt[j].commit_app[k]=PARITY_DELTA_APPR;
+				
 				//define the role of this data chunk in parity-delta-first approach
 				//if it is the first data chunk in this rack, then it is defined as an internal node 
 				if(intnl_nds[rack_id]==node_id){
@@ -1042,20 +1090,20 @@ void cau_commit(int num_rcrd_strp){
 	  printf("Stripe-%d Commit Completes \n", updt_stripe_id);
 
 
+	free(prty_rack_array);
+	free(prty_num_in_racks);
+	free(recv_delta_num);
+	free(commit_approach);
+	free(first_prty_node_array);
+
+
    	}
 
 
    free(tcd_prty);
    free(tcd_dt);
-   free(prty_rack_array);
-   free(prty_num_in_racks);
-
    free(intnl_nds);
    free(updt_chnk_num_racks);
-   free(recv_delta_num);
-   free(commit_approach);
-   free(first_prty_node_array);
-
 
 }
 

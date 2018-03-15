@@ -153,11 +153,6 @@ void cau_server_updte(TRANSMIT_DATA* td){
    	}
 
    gettimeofday(&end_time, NULL);
-   //printf("send_replica_time=%lf\n", end_time.tv_sec-begin_time.tv_sec+(end_time.tv_usec-begin_time.tv_usec)*1.0/1000000);
-
-
-   //send ack to client node
-   //printf("send_ack_to Client\n");
    
    gettimeofday(&begin_time, NULL);
    
@@ -172,9 +167,9 @@ void cau_server_updte(TRANSMIT_DATA* td){
 }
 
 //if it is leaf node, read the data, calculate the prty delta, and send the delta to the internal node
-void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int rack_id, int updt_prty_id, char* data_delta){
+void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int updt_prty_rack_id, int rack_id, int updt_prty_id, char* data_delta){
 
-   //printf("##cau_prty_delta_app_leaf_action:\n");
+   printf("##cau_prty_delta_app_leaf_action:\n");
 
    int stripe_id;
    int global_chunk_id;
@@ -207,6 +202,7 @@ void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int rack_id, int updt_prt
 
    //printf("internal_node_ip:%s\n", delta->next_ip);
 
+   printf("for updt_prty_rack_id=%d\n", updt_prty_rack_id);
    printf("Send Parity Delta to Internal Node: ");
    print_amazon_vm_info(td->next_dest[updt_prty_id]);
 
@@ -284,11 +280,10 @@ void* internal_aggr_send_process(void* ptr){
 	
 }
 
-void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int rack_id, int updt_prty_id, char* data_delta){
+void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int updt_prty_rack_id, int rack_id, int updt_prty_id, char* data_delta){
 
-	//printf("##cau_prty_delta_app_intnl_action:\n");
+	printf("##cau_prty_delta_app_intnl_action:\n");
 
-    int local_chunk_id; 
 	int global_chunk_id;
 	int stripe_id;
 	int chunk_id;
@@ -299,24 +294,18 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int rack_id, int updt_pr
 	int id;
 	int recv_count;
 	int i;
-
-	char* pse_data_delta=(char*)malloc(sizeof(char)*chunk_size);
+	int cddt_rack_id;
+	int node_id;
 
 	stripe_id=td->stripe_id;
 	chunk_id=td->data_chunk_id;
-
-	local_chunk_id=stripe_id*data_chunks+chunk_id;
-	global_chunk_id=stripe_id*num_chunks_in_stripe+chunk_id;
-	
-    //printf("td->chunk_store_index=%d\n", td->chunk_store_index);
-    encode_data(data_delta, pse_data_delta, global_chunk_id, td->updt_prty_id);
 	
     memset(intnl_recv_data_id, 0, sizeof(int)*data_chunks);
 	
     if(td->num_recv_chks_itn>=1)
 		para_recv_data(stripe_id, td->num_recv_chks_itn, SERVER_PORT+data_chunks+updt_prty_id, 1);
 
-	//printf("internal_recv_data completes\n");
+	printf("##internal_recv_data completes\n");
 	//for(i=0; i<num_chunks_in_stripe-data_chunks; i++)
 		//printf("prty_ip=%s\n", node_ip_set[td->updt_prty_nd_id[i]]);
 
@@ -329,7 +318,19 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int rack_id, int updt_pr
 	count=0;
 	for(prty_id=0; prty_id < num_chunks_in_stripe-data_chunks; prty_id++){
 
+		global_chunk_id=stripe_id*num_chunks_in_stripe+data_chunks+prty_id;
+		node_id=td->updt_prty_nd_id[prty_id];
+		cddt_rack_id=get_rack_id(node_id);
+
+		printf("prty_id=%d, global_chunk_id=%d, node_id=%d, cddt_rack_id=%d, updt_prty_rack_id=%d\n", 
+			prty_id, global_chunk_id, node_id, cddt_rack_id, updt_prty_rack_id);
+
+		if(cddt_rack_id!=updt_prty_rack_id)
+			continue;
+
 		if(td->commit_app[prty_id]==PARITY_DELTA_APPR){
+
+			printf("enter if condition:\n");
 
 			asd[prty_id].this_data_id=chunk_id;
 			memcpy(asd[prty_id].data_delta, data_delta, chunk_size);
@@ -372,14 +373,29 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int rack_id, int updt_pr
 	for(i=0; i<count; i++)
 		pthread_join(aggregate_send_mt[i], NULL);
 
-	//printf("internal_node_send_prty_delta complete\n");
-
-	//printf("\n");
-
-	free(pse_data_delta);
 	free(asd);
 
 }
+
+
+void cau_direct_updt_action(TRANSMIT_DATA* td, int data_chunk_id, int rack_id, int prty_chunk_id, char* data_delta){
+
+    printf("DIRECT_APP:\n");
+	
+	char* pse_data=(char*)malloc(sizeof(char)*chunk_size);
+
+	encode_data(data_delta, pse_data, data_chunk_id, prty_chunk_id);
+
+	memcpy(td->buff, pse_data, chunk_size);
+
+	printf("Send Parity Delta to Parity Node: ");
+	print_amazon_vm_info(td->next_dest[prty_chunk_id]);
+
+	send_data(td, td->next_dest[prty_chunk_id], SERVER_PORT+data_chunks+prty_chunk_id, NULL, NULL, UPDT_DATA);
+
+	free(pse_data);
+}
+
 
 void* prty_recv_data_process(void* ptr){
 
@@ -453,8 +469,6 @@ void* prty_recv_data_process(void* ptr){
 				send_td[count].updt_prty_id=i;
 				send_td[count].port_num=SERVER_PORT+data_chunks+i;
 
-				//printf("-----updt_prty_id=%d\n",i);
-
 				pthread_create(&send_mt[count], NULL, send_updt_data_process, (void *)(send_td+count));
 				
 				count++;
@@ -475,7 +489,7 @@ void* prty_recv_data_process(void* ptr){
 
 		}
 
-	else if (td->commit_app[td->updt_prty_id] == PARITY_DELTA_APPR){
+	else if (td->commit_app[td->updt_prty_id] == PARITY_DELTA_APPR || td->commit_app[td->updt_prty_id]==DIRECT_APPR){
 		//printf("td->commit_app[td->updt_prty_id] == PARITY_DELTA_APPR\n");
 		memcpy(pse_prty+rpp.recv_id*chunk_size, td->buff, chunk_size);
 		}
@@ -620,7 +634,6 @@ void cau_server_commit(CMD_DATA* cmd){
 	int   prty_cmmt; 
 	int   i;
 	int   prty_rack_id;
-	int   prty_rack_num;
 	int   server_socket;
 
 	server_socket=init_server_socket(SERVER_PORT+td->updt_prty_id+data_chunks);
@@ -629,8 +642,6 @@ void cau_server_commit(CMD_DATA* cmd){
 	rack_id=get_rack_id(node_id);
     its_stripe_id=td->stripe_id;
 	local_chunk_id=its_stripe_id*data_chunks+td->data_chunk_id;
-
-	prty_rack_num=ceil((num_chunks_in_stripe-data_chunks)/max_chunks_per_rack);
 
 	int* mark_data_delta_cmmt=(int*)malloc(sizeof(int)*rack_num);
 	int* mark_prty_delta_cmmt=(int*)malloc(sizeof(int)*rack_num);
@@ -667,15 +678,18 @@ void cau_server_commit(CMD_DATA* cmd){
 
 		prty_rack_id=get_rack_id(td->updt_prty_nd_id[prty_cmmt]);
 
+		printf("prty_cmmt=%d, td->updt_prty_nd_id[prty_cmmt]=%d, prty_rack_id=%d, td->commit_app[prty_cmmt]=%d\n", 
+			prty_cmmt, td->updt_prty_nd_id[prty_cmmt], prty_rack_id, td->commit_app[prty_cmmt]);
+
 		//identify the commit approach
 		//if it uses data-delta-first approach, then send the data to the internal parity chunk of this parity chunk
 		if(td->commit_app[prty_cmmt]==DATA_DELTA_APPR){
 
-			printf("Data-Delta-First Approach:\n");
-
 			//if the parity chunks in that rack have been committed
 			if(mark_data_delta_cmmt[prty_rack_id]==1)
 				continue;
+
+			printf("Data-Delta-First Approach:\n");
 
 			printf("td->next_dest[prty_cmmt]=%s, prty_rack_id=%d\n", td->next_dest[prty_cmmt], prty_rack_id);	
 			printf("rack_id=%d, prty_rack_id=%d\n", rack_id, prty_rack_id);
@@ -705,7 +719,7 @@ void cau_server_commit(CMD_DATA* cmd){
         //if it uses parity-delta-first approach, then send 
 		else if(td->commit_app[prty_cmmt]==PARITY_DELTA_APPR){
 
-			//printf("#Parity-Delta-First Approach:\n");
+			printf("#Parity-Delta-First Approach:\n");
 
             //the internal node will send the parity delta to the parity chunks within the same rack parallelly. 
             //if this parity chunk has been updated by internal node
@@ -716,12 +730,23 @@ void cau_server_commit(CMD_DATA* cmd){
 
 			//check the role of the data chunk 
 			if(td->prty_delta_app_role==DATA_LEAF)
-				cau_prty_delta_app_leaf_action(td, rack_id, prty_cmmt, data_delta);
+				cau_prty_delta_app_leaf_action(td, prty_rack_id, rack_id, prty_cmmt, data_delta);
 
 			else if(td->prty_delta_app_role==DATA_INTERNAL)
-				cau_prty_delta_app_intnl_action(td, rack_id, prty_cmmt, data_delta);
+				cau_prty_delta_app_intnl_action(td, prty_rack_id, rack_id, prty_cmmt, data_delta);
 
 			mark_prty_delta_cmmt[prty_rack_id]=1;
+
+			}
+
+		else if(td->commit_app[prty_cmmt]==DIRECT_APPR){
+
+			printf("#DIRECT_APPR:\n");
+
+			memcpy(td->next_ip, td->next_dest[prty_cmmt], ip_len);
+
+			//send the data 
+			cau_direct_updt_action(td, td->data_chunk_id, rack_id, prty_cmmt, data_delta);
 
 			}
 
