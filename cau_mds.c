@@ -854,7 +854,7 @@ void cau_commit(int num_rcrd_strp){
 				break;
 
 		delta_num=recv_delta_num[k];
-		tcd_prty[j].num_recv_chks_prt=delta_num; //<------notice this line
+		tcd_prty[j].num_recv_chks_prt=delta_num; 
 		tcd_prty[j].chunk_store_index=locate_store_index(prty_node_id, global_chunk_id);
 
 		//decide which parity chunk should be served as the internal for delta forwarding
