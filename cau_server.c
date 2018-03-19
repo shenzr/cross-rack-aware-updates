@@ -669,8 +669,7 @@ void cau_server_commit(CMD_DATA* cmd){
 	cau_read_cal_data_delta(td->stripe_id, data_delta, local_chunk_id, td->chunk_store_index);
 
 	//if it is a data chunk, we consider the commit of m parity chunks 
-	//<------NOTICE: if the number of parity chunks is placed in more than one rack, we can let a data node 
-	//send its data delta to the parity chunks in parallel
+
 	for(prty_cmmt=0; prty_cmmt<num_chunks_in_stripe-data_chunks; prty_cmmt++){
 
         td->port_num=SERVER_PORT+data_chunks+prty_cmmt;

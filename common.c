@@ -21,24 +21,26 @@
 
 #include "config.h"
 
+/* it records the public ip address of amazon vms*/
 char* node_ip_set[total_nodes_num]={"13.125.219.94", "13.125.213.113", "13.125.241.211", "13.125.205.78", "13.125.221.99", //seoul nodes
 									"13.250.2.168", "54.255.236.120", "13.250.109.234", "54.169.201.194", "54.255.207.255", //sgp nodes
 									"13.211.138.59", "54.252.226.100", "13.211.234.168", "54.252.191.111", "13.211.95.45", //sydney nodes
 									"54.168.99.38", "13.231.125.11", "13.231.255.124", "13.231.109.236", "13.113.190.179"}; //tokyo
 
+/* it records the inner ip address of amazon vms read from eth0 */
 char* inner_ip_set[total_nodes_num]={"172.31.22.65", "172.31.25.109", "172.31.28.40", "172.31.31.102", "172.31.21.104", //seoul region
 "172.31.12.140", "172.31.10.209", "172.31.12.191", "172.31.13.62", "172.31.6.226", //sgp region
 "172.31.31.128", "172.31.19.172", "172.31.29.105", "172.31.27.60", "172.31.22.26", //sydney region
 "172.31.24.91", "172.31.21.42", "172.31.29.227", "172.31.25.150", "172.31.17.236"}; //tokyo region
 
-//char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.10.55"};
 char* mt_svr_ip="13.250.102.147";
 char* client_ip="13.229.232.195";
 char* gateway_ip="13.229.232.195";
+
+/* we currently consider all the regions have the same number of nodes */
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack, node_num_per_rack};
 
 char* region_name[rack_num]={"Seoul", "Singapore", "Sydney", "Tokyo"};
-//char* region_name[rack_num]={"Rack-0", "Rack-1", "Rack-2"};
 
 
 // a hash function to check the integrity of received data
@@ -58,18 +60,18 @@ unsigned int RSHash(char* str, unsigned int len)
     return hash;
 }
 
+/* print the region info and node info */
 void print_amazon_vm_info(char* node_ip){
 
 	int node_id=get_node_id(node_ip);
 	int rack_id=get_rack_id(node_id);
 	int base=node_num_per_rack;
-
-	//printf("node_ip=%s, rack_id=%d, node_id=%d\n", node_ip, rack_id, node_id);
+	
 	printf("Region-%s, Node-%d\n", region_name[rack_id], node_id%base);
 
 }
 
-
+/* print all the elements in an array */
 void print_array(int row, int col, int *array){
 
   int i,j; 
@@ -84,7 +86,7 @@ void print_array(int row, int col, int *array){
   	}
 }
 
-
+/* calculate the sum of all the elements in an array */
 int sum_array(int num, int* arr){
 
 	int count=0;
@@ -94,7 +96,6 @@ int sum_array(int num, int* arr){
 		count+=arr[i];
 
 	return count;
-
 }
 
 
@@ -135,7 +136,10 @@ int find_max_array_index(int* array, int n){
 
 
 
-//this function is to read the mapping information from disk and keep it in the memory 
+/* this function is executed by the metadata server, which 
+ * reads the mapping information from a mapping file and keep the 
+ * mapping info in the memory 
+ */
 void read_chunk_map(char* map_file){
 
 	int j;
@@ -151,8 +155,7 @@ void read_chunk_map(char* map_file){
     stripe_id=0;
 	temp=0;
 	while(fgets(strline, strlen, fd)!=NULL){
-
-	  //printf("%s",strline);
+		
 	  index=0;
 
 	  for(j=0; j<strlen; j++){
@@ -164,10 +167,11 @@ void read_chunk_map(char* map_file){
 			temp=temp*10+strline[j]-'0';
 
 		if(strline[j]==' '){
+			
 			global_chunk_map[stripe_id*num_chunks_in_stripe+index]=temp;
-			//printf("global_chunk_map[%d][%d]=%d\n", stripe_id, index, chunk_map[stripe_id*n+index]);
 			temp=0;
 			index++;
+			
 			}
 		}
 	  
@@ -177,11 +181,10 @@ void read_chunk_map(char* map_file){
 
 	fclose(fd);
 
-	//print_array(stripe_num, num_chunks_in_stripe, global_chunk_map);
 }
 
 
-//given a node, return the rack_id it resides in
+/* this function returns the rack_id of a given node_id */
 int get_rack_id(int node_id){
 
     int i;
@@ -201,7 +204,7 @@ int get_rack_id(int node_id){
 
 }
 
-
+/* this function reads the ip address from the nic eth0 */
 void GetLocalIp(char* local_ip)
 {
 
@@ -362,7 +365,6 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
     while(sent_len < data_size){
         ret=write(client_socket, send_buff+sent_len, data_size-sent_len);
         sent_len+=ret;
-		//printf("send_len=%d, data_size=%d\n", sent_len, data_size);
     }
 
     free(send_buff);
@@ -414,21 +416,19 @@ void send_req(UPDT_REQ_DATA* req, char* server_ip, int port_num, META_INFO* meta
     socklen_t server_addr_length = sizeof(server_addr);
 
     while(connect(client_socket,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0);
-    //printf("connect success!\n");
     
     sent_len=0;
     while(sent_len < data_size){
         ret=write(client_socket, send_buff+sent_len, data_size-sent_len);
         sent_len+=ret;
-		//printf("send_len=%d, data_size=%d\n", sent_len, data_size);
     }
 
     free(send_buff);
+
 	ret=close(client_socket);
 	if(ret==-1)
 		perror("close_send_data_socket error!\n");
 	
-    //printf("send completes!\n");
 }
 
 
@@ -504,33 +504,13 @@ int update_loged_chunks(int given_chunk_id){
     // record the given_chunk_id
     newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i]=given_chunk_id;
     newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i+1]=new_log_chunk_cnt;
-/*
-    printf("updated_bucket_record:\n");
-    for(i=0; i<entry_per_bucket; i++){
 
-        for(j=0; j<bucket_num; j++)
-            printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2]);
-
-        printf("\n");
-    }
-
-    printf("\n");
-
-    printf("log_cnt:\n");
-    for(i=0; i<entry_per_bucket; i++){
-
-        for(j=0; j<bucket_num; j++)
-            printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2+1]);
-
-        printf("\n");
-    }
-*/
     return if_new_log_chunk;
 
 }
 
 
-//this function transforms a char type to an integer type
+/* this function transforms a char type to an integer type */
 void trnsfm_char_to_int(char *char_data, long long *data){
 
     int i=0;
@@ -1416,10 +1396,8 @@ void log_write(char* filename, TRANSMIT_DATA* td){
 
 void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 
-	//printf("forward to: %s\n", td->next_ip);
-	//printf("stripe-%d, from %s, to %s\n", td->stripe_id, sender_ip, td->next_ip);
+    /* record the source ip address */
 	memcpy(td->from_ip, sender_ip, ip_len);
-	//printf("stripe-%d, from_ip=%s, next_ip=%s\n", td->stripe_id, sender_ip, td->next_ip);
 	send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 	
 }
@@ -1427,14 +1405,12 @@ void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 
 void gateway_forward_ack_info(ACK_DATA* ack){
 
-	//printf("forward to: %s\n", td->next_ip);
 	send_data(NULL, ack->next_ip, ack->port_num, ack, NULL, ACK_INFO);
 	
 }
 
 void gateway_forward_cmd_data(CMD_DATA* cmd){
 
-	//printf("forward to: %s\n", td->next_ip);
 	send_data(NULL, cmd->next_ip, cmd->port_num, NULL, cmd, CMD_INFO);
 	
 }
@@ -1594,9 +1570,10 @@ void recv_metadata(META_INFO* metadata, int port_num){
 
 }
 
-void connect_metaserv(int chunk_id, META_INFO* metadata){
 
-   //init the request 
+
+/* this function is executed by the client to connect the metadata server for data update */
+void connect_metaserv(int chunk_id, META_INFO* metadata){
 
    UPDT_REQ_DATA* req=(UPDT_REQ_DATA*)malloc(sizeof(UPDT_REQ_DATA));
 
@@ -1608,16 +1585,7 @@ void connect_metaserv(int chunk_id, META_INFO* metadata){
 
    //recv the metadata information
    recv_metadata(metadata, UPDT_PORT);
-/*
-   //print metadata info
-   printf("md->stripe_id=%d\n", metadata->stripe_id);
-   printf("md->data_chunk_id=%d\n", metadata->data_chunk_id);
-   printf("md->chunk_store_index=%d\n", metadata->chunk_store_index);
-   printf("md->next_ip=%s\n", metadata->next_ip);
 
-   printf("updt_prty_nd_id:\n");
-   print_array(1, num_chunks_in_stripe-data_chunks, metadata->updt_prty_nd_id);
-*/
    free(req);
 
 }
