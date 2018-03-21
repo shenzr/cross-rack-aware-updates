@@ -44,6 +44,12 @@ extern int* reed_sol_vandermonde_coding_matrix(int data, int prty, int word_len)
 extern double ceil(double x);
 extern int find_max_array_index(int* array, int n);
 extern unsigned int RSHash(char* str, unsigned int len);
+extern void print_amazon_vm_info(char* node_ip);
+extern void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip);
+extern void gateway_forward_ack_info(ACK_DATA* ack);
+extern void gateway_forward_cmd_data(CMD_DATA* cmd);
+extern void send_req(UPDT_REQ_DATA* req, char* server_ip, int port_num, META_INFO* metadata, int info_type);
+extern void connect_metaserv(int chunk_id, META_INFO* metadata);
 
 extern int   nodes_in_racks[rack_num];
 extern char* node_ip_set[total_nodes_num];

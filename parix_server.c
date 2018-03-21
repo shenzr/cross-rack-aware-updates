@@ -38,7 +38,7 @@ int parix_update_loged_chunks(int given_chunk_id, int* log_table, int op_type){
 
     int bucket_id;
     int i;
-	int j;
+
 	int if_need_old_dt;
 
     bucket_id=given_chunk_id%bucket_num;
@@ -160,7 +160,7 @@ void parix_read_log_data(char* log_data, int local_chunk_id, int* log_table, int
 	if(ret<chunk_size){
 
 	   perror("read_newest_log_data error!\n");
-	   printf("old_chunk_log_order=%d\n", old_chunk_log_order);
+	   printf("old_log_chunk_cnt=%d\n", old_log_chunk_cnt);
 	   exit(1);
 	}
 
@@ -174,7 +174,6 @@ void parix_read_log_data(char* log_data, int local_chunk_id, int* log_table, int
 //it is performed at the data chunk by 1) in-place writing the new data; 2) sending the new data to m parity chunks
 void parix_server_update(TRANSMIT_DATA* td){
 
-   int global_chunk_id;
    int sum_cmplt;
    int sum_need;
    
@@ -213,7 +212,6 @@ void parix_server_update(TRANSMIT_DATA* td){
    	}
 
    //in-place update the new data 
-   global_chunk_id=td->stripe_id*num_chunks_in_stripe+td->data_chunk_id%data_chunks;
    write_new_data(td->buff, td->chunk_store_index);
 
    //send ack to the client node
@@ -225,7 +223,7 @@ void parix_server_update(TRANSMIT_DATA* td){
 //it is performed at the parity chunk that log the new data in the log file
 void parix_log_write(TRANSMIT_DATA* td, char* sender_ip, int op_type){
 
-	int i;
+
 	int if_need_old_dt;
 
 	if((strcmp(sender_ip, gateway_ip)==0) && (if_gateway_open==1))
@@ -301,6 +299,7 @@ void parix_server_commit(CMD_DATA* cmd){
     int   updt_prty_id;
 	int   local_chunk_id;
 	int   i;
+	int   ret;
 
     char* data_delta=malloc(sizeof(char)*chunk_size);
 	char* prty_delta=malloc(sizeof(char)*chunk_size);
@@ -371,15 +370,25 @@ void parix_server_commit(CMD_DATA* cmd){
 	if(parix_num_log_dt==0){
 
 		//check the file size 
-		truncate("parix_log_file", 0);
-		truncate("parix_log_old_file", 0);
+		ret=truncate("parix_log_file", 0);
+		if(ret!=0){
+			perror("truncate_parix_log_file error!\n");
+			exit(1);
+			}
 		
+		ret=truncate("parix_log_old_file", 0);
+		if(ret!=0){
+			perror("truncate_parix_old_file error!\n");
+			exit(1);
+			}
+		
+
 		struct stat stat_info;
 		stat("parix_log_file", &stat_info);
-		printf("AFTER Truncate: parix_log_file_size=%d\n", stat_info.st_size);
+		printf("AFTER Truncate: parix_log_file_size=%d\n", (int)(stat_info.st_size));
 
 		stat("parix_log_old_file", &stat_info);
-		printf("AFTER Truncate: parix_log_old_file_size=%d\n", stat_info.st_size);
+		printf("AFTER Truncate: parix_log_old_file_size=%d\n", (int)(stat_info.st_size));
 
 		//printf("\n\n");
 
@@ -404,17 +413,11 @@ int main(int argc, char** argv){
     int read_size;
     int recv_len;
     int connfd = 0;
-	int local_node_id;
 	int recv_data_type;
-	int node_id;
 	int send_size;
 
 	char local_ip[ip_len];
 	char* sender_ip;
-	char local_public_ip[ip_len];
-
-    local_node_id=get_local_node_id();
-	GetLocalIp(local_ip);
 
 	if_gateway_open=GTWY_OPEN;
 

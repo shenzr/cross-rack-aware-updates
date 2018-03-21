@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
@@ -24,18 +25,11 @@ void baseline_update(META_INFO* md){
 
    int node_id;
    int j;
-   int rack_id;
-   int temp_rack_id;
    int base=node_num_per_rack;
-   int local_chunk_id;
    int recv_rack_id;
-
-   //init td
-   struct timeval bg_tm, ed_tm;
 
    TRANSMIT_DATA* td=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));
 
-   local_chunk_id=md->data_chunk_id;
    td->send_size=sizeof(TRANSMIT_DATA);
    td->op_type=DATA_UPDT; 
    td->port_num=UPDT_PORT;
@@ -120,7 +114,6 @@ void baseline_read_trace(char *trace_name){
     int access_start_chunk, access_end_chunk;
     int access_chunk_num;
     int ret;
-    int access_start_stripe, access_end_stripe;
     int count;
 
 	META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
@@ -164,20 +157,13 @@ void baseline_read_trace(char *trace_name){
 
         printf("\n\ncount=%d\n", count);
 
-        // printf("cur_rcd_idx=%d\n",cur_rcd_idx);
-        // analyze the access pattern
-        // if it is accessed in the same timestamp
-
         trnsfm_char_to_int(offset, offset_int);
         trnsfm_char_to_int(size, size_int);
 
         access_start_chunk=(*offset_int)/((long long)(chunk_size));
         access_end_chunk=(*offset_int+*size_int-1)/((long long)(chunk_size));
         access_chunk_num += access_end_chunk - access_start_chunk + 1;
-
-        access_start_stripe=access_start_chunk/data_chunks;
-        access_end_stripe=access_end_chunk/data_chunks;
-
+		
         //perform update for each updated chunk
         for(i=access_start_chunk; i<=access_end_chunk; i++){
 			connect_metaserv(i, metadata);

@@ -18,6 +18,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <net/if_arp.h>
+#include <sys/time.h>
 
 #include "config.h"
 
@@ -59,6 +60,45 @@ unsigned int RSHash(char* str, unsigned int len)
 
     return hash;
 }
+
+int get_node_id(char* given_ip){
+
+	int i;
+	int ret;
+
+    //locate the node id
+    for(i=0; i<total_nodes_num; i++){
+
+        if((ret=strcmp(node_ip_set[i],given_ip))==0)
+            break;
+
+    }
+
+    return i;
+
+}
+
+
+/* this function returns the rack_id of a given node_id */
+int get_rack_id(int node_id){
+
+    int i;
+    int count;
+
+    count=0;
+    for(i=0; i<rack_num; i++){
+
+        count+=nodes_in_racks[i];
+
+        if(count>node_id)
+            break;
+
+    }
+
+    return i;
+
+}
+
 
 /* print the region info and node info */
 void print_amazon_vm_info(char* node_ip){
@@ -184,25 +224,7 @@ void read_chunk_map(char* map_file){
 }
 
 
-/* this function returns the rack_id of a given node_id */
-int get_rack_id(int node_id){
 
-    int i;
-    int count;
-
-    count=0;
-    for(i=0; i<rack_num; i++){
-
-        count+=nodes_in_racks[i];
-
-        if(count>node_id)
-            break;
-
-    }
-
-    return i;
-
-}
 
 /* this function reads the ip address from the nic eth0 */
 void GetLocalIp(char* local_ip)
@@ -265,23 +287,6 @@ int get_local_node_id(){
 }
 
 
-int get_node_id(char* given_ip){
-
-	int i;
-	int ret;
-
-    //locate the node id
-    for(i=0; i<total_nodes_num; i++){
-
-        if((ret=strcmp(node_ip_set[i],given_ip))==0)
-            break;
-
-    }
-
-    return i;
-
-}
-
 
 int init_client_socket(int client_port_num){
 
@@ -295,7 +300,6 @@ int init_client_socket(int client_port_num){
     //create client socket
     int client_socket = socket(AF_INET,SOCK_STREAM,0);
     int on=1;
-    int ret; 
 
     if(client_socket < 0)
     {
@@ -303,7 +307,7 @@ int init_client_socket(int client_port_num){
         //exit(1);
     }
 
-	ret=setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
     return client_socket;
 
@@ -356,7 +360,7 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
         exit(1);
     }
     server_addr.sin_port = htons(port_num);
-    socklen_t server_addr_length = sizeof(server_addr);
+
 
     while(connect(client_socket,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0);
     //printf("connect success!\n");
@@ -413,7 +417,7 @@ void send_req(UPDT_REQ_DATA* req, char* server_ip, int port_num, META_INFO* meta
         exit(1);
     }
     server_addr.sin_port = htons(port_num);
-    socklen_t server_addr_length = sizeof(server_addr);
+
 
     while(connect(client_socket,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0);
     
@@ -472,7 +476,7 @@ int init_server_socket(int port_num){
 int update_loged_chunks(int given_chunk_id){
 
     int bucket_id;
-    int i,j;
+    int i;
 	int if_new_log_chunk=-1;
 
     bucket_id=given_chunk_id%bucket_num;
@@ -1420,7 +1424,6 @@ void gateway_forward_cmd_data(CMD_DATA* cmd){
 void read_log_data(int local_chunk_id, char* log_data, char* filename){
 
     int i;
-	int j;
     int bucket_id;
     int log_order;
 	int ret;
@@ -1540,7 +1543,7 @@ void recv_metadata(META_INFO* metadata, int port_num){
 		connfd=accept(server_socket, (struct sockaddr*)&sender_addr, &length);
 		if(connfd<0){
 
-			perror(connfd);
+			perror("recv_metadata fails\n");
 			exit(1);
 
 			}

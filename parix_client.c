@@ -8,11 +8,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
-
 #include <net/if.h>
 #include <netinet/in.h>
 #include <net/if_arp.h>
 #include <arpa/inet.h>
+#include <sys/time.h>
 
 #include "common.h"
 #include "config.h"
@@ -110,22 +110,14 @@ void parix_read_trace(char *trace_name){
     char divider=',';
 
 
-    int i,j;
-    int k;
+    int i;
     int access_start_chunk, access_end_chunk;
     int access_chunk_num;
-
     int ret;
-    int num_rcrd_strp;
-    int access_start_stripe, access_end_stripe;
     int count;
-    int temp_start_chunk, temp_end_chunk;
-	int if_first_updt;
-	int stripe_id;
-	int chunk_id;
 
 	double acc_updt_time=0;
-	double parix_time=0;
+
 
 	META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
@@ -140,8 +132,6 @@ void parix_read_trace(char *trace_name){
     offset_int=&a;
     size_int=&b;
     count=0;
-
-    num_rcrd_strp=0;
 
     memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
 	cross_rack_updt_traffic=0;
@@ -166,7 +156,6 @@ void parix_read_trace(char *trace_name){
             continue;
 
 		count++;
-		if_first_updt=0;
 
 		if(count%1==0)
 			printf("count=%d, update_time=%lf\n", count, acc_updt_time);
@@ -183,13 +172,6 @@ void parix_read_trace(char *trace_name){
 
         //printf("access_start_stripe=%d, access_end_stripe=%d\n", access_start_stripe, access_end_stripe);
         //printf("access_start_chunk=%d, access_end_chunk=%d\n", access_start_chunk, access_end_chunk);
-
-		if(access_end_stripe > stripe_num){
-
-			printf("ERROR: stripe_num exceeds maximum default value! access_end_stripe=%d, stripe_num=%d\n", access_end_stripe, stripe_num);
-			exit(1);
-
-			}
 		
 		//for each new write, send the data to its desined chunk 
 		for(i=access_start_chunk; i<=access_end_chunk; i++){

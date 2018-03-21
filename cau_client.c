@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <net/if_arp.h>
 #include <arpa/inet.h>
+#include <sys/time.h>
 
 #include "common.h"
 #include "config.h"
@@ -22,10 +23,7 @@
 /* perform the update operation and fill the sent structure */
 void cau_update(META_INFO* md){
 
-   int node_id;
    int j;
-   int rack_id;
-   int prty_rack_id;
 
    TRANSMIT_DATA* td=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));
 
@@ -79,16 +77,9 @@ void cau_read_trace(char *trace_name){
 	char usetime[10];
     char divider=',';
 
-    int i,j;
-    int k;
+    int i;
     int access_start_chunk, access_end_chunk;
-    int total_num_req;
     int ret;
-    int num_rcrd_strp;
-    int access_start_stripe, access_end_stripe;
-    int count;
-    int temp_start_chunk, temp_end_chunk;
-	double update_time;
 	
     long long *size_int;
     long long *offset_int;
@@ -97,15 +88,10 @@ void cau_read_trace(char *trace_name){
     b=0LL;
     offset_int=&a;
     size_int=&b;
-    count=0;
-    total_num_req=0;
-    num_rcrd_strp=0;
 
 	META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
     memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
-
-	update_time=0;
 
     while(fgets(operation, sizeof(operation), fp)) {
 
@@ -128,9 +114,6 @@ void cau_read_trace(char *trace_name){
         // get the range of operated data chunks 
         access_start_chunk=(*offset_int)/((long long)(chunk_size));
         access_end_chunk=(*offset_int+*size_int-1)/((long long)(chunk_size));
-
-        access_start_stripe=access_start_chunk/data_chunks;
-        access_end_stripe=access_end_chunk/data_chunks;
 
         // for each operated data chunk, connect the metadata server and then perform the update
         for(i=access_start_chunk; i<=access_end_chunk; i++){

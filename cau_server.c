@@ -19,6 +19,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <net/if_arp.h>
+#include <sys/time.h>
 
 #include "common.h"
 #include "config.h"
@@ -44,11 +45,12 @@ void cau_log_write(TRANSMIT_DATA* td){
 
     //specify fd at the bottom of the file
     int local_chunk_id;
+	int ret;
 	local_chunk_id=td->stripe_id*data_chunks+td->data_chunk_id;
 	//printf("log_chunk_id=%d\n", local_chunk_id);
 	
     log_write("cau_log_file", td);
-    int ret=update_loged_chunks(local_chunk_id); //find the position in newest_chunk_log_order and update the log order
+    ret=update_loged_chunks(local_chunk_id); //find the position in newest_chunk_log_order and update the log order
     new_log_chunk_cnt++;
 
 }
@@ -58,13 +60,16 @@ void cau_log_write(TRANSMIT_DATA* td){
 // we update the data chunks stripe by stripe.
 void cau_read_cal_data_delta(int stripe_id, char* data_delta, int local_chunk_id, int store_index){
 
-    //get the host ip_addr
 	char *log_data=malloc(sizeof(char)*chunk_size);
     char* ori_data=malloc(sizeof(char)*chunk_size);
 
+    // calculate the data delta chunk
 	read_log_data(local_chunk_id, log_data, "cau_log_file");
     read_old_data(ori_data, store_index);
     bitwiseXor(data_delta, ori_data, log_data, chunk_size);
+
+    // in-place write the new data chunk
+	write_new_data(log_data, local_chunk_id);
 
     free(log_data);
     free(ori_data);
@@ -75,9 +80,7 @@ void cau_server_updte(TRANSMIT_DATA* td){
 
    //printf("data_update:\n");
    //printf("++++++++cau_update begins +++++++++\n");
-
-   int i;
-   int its_stripe_id;
+   int ret;
    int sum_cmplt;
    int prty_node_id;
 
@@ -85,7 +88,12 @@ void cau_server_updte(TRANSMIT_DATA* td){
    if(if_commit_start==1){
 
 	//when finishing the commit, return to the default settings
-	truncate("cau_log_file", 0);
+	ret=truncate("cau_log_file", 0);
+
+	if(ret!=0){
+		printf("truncate fails\n");
+		exit(1);
+		}
 	
 	//check the file size 
 	struct stat stat_info;
@@ -98,8 +106,6 @@ void cau_server_updte(TRANSMIT_DATA* td){
    	}
    
    //update the recorded stripe list
-   its_stripe_id=td->stripe_id;
-
    struct timeval begin_time, end_time;
 
    gettimeofday(&begin_time, NULL);
@@ -170,21 +176,10 @@ void cau_server_updte(TRANSMIT_DATA* td){
 void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int updt_prty_rack_id, int rack_id, int updt_prty_id, char* data_delta){
 
    printf("##cau_prty_delta_app_leaf_action:\n");
-
-   int stripe_id;
-   int global_chunk_id;
-   int local_chunk_id;
-   int chunk_id;
    int temp_node_id;
    int temp_rack_id;
    
    TRANSMIT_DATA* delta = (TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));   
-
-   stripe_id=td->stripe_id;
-   chunk_id=td->data_chunk_id;
-
-   local_chunk_id=stripe_id*data_chunks+chunk_id;
-   global_chunk_id=stripe_id*num_chunks_in_stripe+chunk_id; // this global id is used to read the old data from data file
 
    delta->send_size=sizeof(TRANSMIT_DATA);
    delta->op_type=DELTA;
@@ -221,7 +216,7 @@ void* internal_aggr_send_process(void* ptr){
 
 	AGGT_SEND_DATA asd=*(AGGT_SEND_DATA*)ptr; 
 
-	int i,j;
+	int i;
 	int temp_node_id, temp_rack_id;
 	
 	char* prty_delta=(char*)malloc(sizeof(char)*chunk_size);
@@ -287,8 +282,8 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int updt_prty_rack_id, i
 	int global_chunk_id;
 	int stripe_id;
 	int chunk_id;
-	int temp_node_id;
-	int temp_rack_id;
+
+
 	int prty_id;
 	int count;
 	int id;
@@ -514,7 +509,7 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 	int index;
 	int i;
 	char local_ip[ip_len];
-	int prty_rack_id;
+
 	int prty_node_id;
 	
 	char* new_prty=(char*)malloc(sizeof(char)*chunk_size);
@@ -534,8 +529,7 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 		}
 
 	prty_node_id=i;
-	prty_rack_id=get_rack_id(i);
-	
+
     //read old parity in the array new_prty
     read_old_data(new_prty, td->chunk_store_index);
 
@@ -632,7 +626,6 @@ void cau_server_commit(CMD_DATA* cmd){
 	int   node_id;
 	int   rack_id;
 	int   prty_cmmt; 
-	int   i;
 	int   prty_rack_id;
 	int   server_socket;
 
@@ -821,9 +814,7 @@ int main(int argc, char** argv){
 	if_commit_start=0;
 	if_gateway_open=GTWY_OPEN;
 
-	int local_node_id=get_local_node_id();
 	GetLocalIp(local_ip);
-
 	printf("local_ip=%s\n", local_ip);
 
     //initial encoding coefficinets

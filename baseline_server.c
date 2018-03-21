@@ -16,8 +16,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-
-
+#include <sys/time.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <net/if_arp.h>
@@ -310,8 +309,6 @@ int main(int argc, char** argv){
     int read_size;
     int recv_len;
     int connfd = 0;
-	int local_node_id;
-	int expect_len;
 	int recv_data_type;
 
 	aver_read_time=0;
@@ -323,11 +320,6 @@ int main(int argc, char** argv){
     char* sender_ip;
 	int gateway_count;
 	int send_size;
-	int sender_node_id;
-	int sender_rack_id;
-	
-    local_node_id=get_local_node_id();
-	GetLocalIp(local_ip);
 
 	if_gateway_open=GTWY_OPEN;
 

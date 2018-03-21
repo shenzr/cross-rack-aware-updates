@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +8,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
-
 #include <net/if.h>
 #include <netinet/in.h>
 #include <net/if_arp.h>
@@ -24,15 +22,11 @@ void baseline_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
    int global_chunk_id; 
    int node_id;
    int j;
-   int rack_id;
-   int prty_rack_id;
    int stripe_id;
-   int chunk_id_in_stripe;
 
    //read the data from req
    local_chunk_id=req->local_chunk_id;
    stripe_id=local_chunk_id/data_chunks;
-   chunk_id_in_stripe=local_chunk_id%data_chunks;
 
    //init a meta_info
    META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
@@ -95,7 +89,7 @@ int main(int argc, char** argv){
 		
 		if(connfd<0){
 
-			perror(connfd);
+			perror("connection fails\n");
 			exit(1);
 
 			}

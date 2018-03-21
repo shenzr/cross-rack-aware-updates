@@ -24,8 +24,6 @@ void init_parix_fo_gen_chunk_distrbtn(){
    int i,j;
    int base;
    int rank;
-   int k;
-   int index;
 
    int* chunk_to_node=malloc(sizeof(int)*num_chunks_in_stripe);
    int* parix_fo_chunk_map=malloc(sizeof(int)*stripe_num*num_chunks_in_stripe); // maps chunk_id to node_id

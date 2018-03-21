@@ -38,7 +38,7 @@ void* parix_send_cmd_process(void* ptr){
 void parix_commit(int num_rcrd_strp){
   
   //print_array(num_rcrd_strp , data_chunks+1 , mark_updt_stripes_tab);
-  int num_updt_dt_chnks;
+
   int i,j; 
   int prty_node_id;
   int global_chunk_id;
@@ -124,8 +124,6 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
    int global_chunk_id; 
    int node_id;
    int j;
-   int rack_id;
-   int prty_rack_id;
    int stripe_id;
    int chunk_id_in_stripe;
 
@@ -239,7 +237,7 @@ int main(int argc, char** argv){
 		
 		if(connfd<0){
 
-			perror(connfd);
+			perror("connection fails\n");
 			exit(1);
 
 			}
