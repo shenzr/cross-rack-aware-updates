@@ -441,8 +441,10 @@ void data_grouping(int num_rcrd_strp){
 }
 
 
-//establish the map of a data chunk to a parity chunk. This parity chunk is used for log a replica of the data chunk, so as to 
-//promise one rack failure tolerance
+/* This function establishes the map of a data chunk to a parity node. 
+ * This parity node is used for log a replica of the data chunk, so as to 
+ * promise any single node/rack failure
+ */
 void cau_estbh_log_map(){
 
 	//printf("enter cau_estbh_log_map:\n");
@@ -460,8 +462,9 @@ void cau_estbh_log_map(){
     int expect_rack_id;
 
 	// it records the bandwidth among regions in amazon experiments
-	// we select the parity rack in the region with the maximum bandwidth 
+	// we select the parity node in the region with the maximum bandwidth 
 	// for the rack stores updated data
+	
 	int map_priority[rack_num][rack_num]; 
 
 	map_priority[0][0]=0;
@@ -608,7 +611,7 @@ void cau_commit(int num_rcrd_strp){
   
    int rack_has_prty[rack_num]; 
    
-   // performs the delta commit stripe by stripe 
+   // performs delta commit for each updated stripe 
    for(i=0; i<num_rcrd_strp; i++){
 	 
 	 updt_stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
@@ -741,7 +744,7 @@ void cau_commit(int num_rcrd_strp){
 			}
 		}
 
-	  //inform the parity chunks first
+	  //inform the parity nodes first
 	  memset(send_cmd_prty_thread, 0, sizeof(send_cmd_prty_thread));
 	  
 	  for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
@@ -945,7 +948,7 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
 	int its_prty_nd_id;
 
 
-    // if the number of logged stripes exceeds the threshold 
+    // if the number of logged stripes exceeds a threshold 
     // then launch delta commit and data grouping
     if(num_rcrd_strp>=max_updt_strps){
 		

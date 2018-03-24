@@ -39,8 +39,7 @@ int locate_prty_node_id(int stripe_id, int prty_chunk_id){
 }
 
 
-// write the received data in a log file
-// update the offset of the wrtten chunk
+/* This function writes a chunk to an append-only file */
 void cau_log_write(TRANSMIT_DATA* td){
 
     //specify fd at the bottom of the file
@@ -57,7 +56,7 @@ void cau_log_write(TRANSMIT_DATA* td){
 
 
 
-// we update the data chunks stripe by stripe.
+/* This function reads an old data from the data_file and a new data, given the chunk_id, and calculates the data delta */
 void cau_read_cal_data_delta(int stripe_id, char* data_delta, int local_chunk_id, int store_index){
 
 	char *log_data=malloc(sizeof(char)*chunk_size);
@@ -75,7 +74,7 @@ void cau_read_cal_data_delta(int stripe_id, char* data_delta, int local_chunk_id
     free(ori_data);
 }
 
-
+/* This function is performed at the data node, describing how a data node handles data update requests */
 void cau_server_updte(TRANSMIT_DATA* td){
 
    //printf("data_update:\n");
@@ -104,19 +103,11 @@ void cau_server_updte(TRANSMIT_DATA* td){
 	//reset the flag
    	if_commit_start=0;
    	}
-   
-   //update the recorded stripe list
-   struct timeval begin_time, end_time;
 
-   gettimeofday(&begin_time, NULL);
-
+   // write the data in an append-only file 
    cau_log_write(td);
 
-   gettimeofday(&end_time, NULL);
-   printf("write_log_time=%lf\n", end_time.tv_sec-begin_time.tv_sec+(end_time.tv_usec-begin_time.tv_usec)*1.0/1000000);
-
-   gettimeofday(&begin_time, NULL);
-
+   // if the number of replica to stored is one, then send the replica to one parity node in another rack
    if(cau_num_rplc==1){
 
 	td->op_type=DATA_LOG;
@@ -157,22 +148,15 @@ void cau_server_updte(TRANSMIT_DATA* td){
 
    	   }
    	}
-
-   gettimeofday(&end_time, NULL);
-   
-   gettimeofday(&begin_time, NULL);
    
    send_ack(td->stripe_id, td->data_chunk_id, -1, client_ip, UPDT_ACK_PORT, LOG_CMLT);
    
-   gettimeofday(&end_time, NULL);
-   //printf("send_ack_time=%lf\n", end_time.tv_sec-begin_time.tv_sec+(end_time.tv_usec-begin_time.tv_usec)*1.0/1000000);   
-
-
-
 
 }
 
-//if it is leaf node, read the data, calculate the prty delta, and send the delta to the internal node
+/* We define a parity delta chunk as a parity leaf if this parity delta chunk has to be sent to 
+ * a data node (called internal node) within the same rack for aggregation in parity-delta commit. 
+ * So if it is leaf node, read the data and send the data delta to the internal node */
 void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int updt_prty_rack_id, int rack_id, int updt_prty_id, char* data_delta){
 
    printf("##cau_prty_delta_app_leaf_action:\n");
@@ -211,7 +195,7 @@ void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int updt_prty_rack_id, in
 
 }
 
-
+/* This function is executed by the internal nodes to aggregate the parity delta chunks */ 
 void* internal_aggr_send_process(void* ptr){
 
 	AGGT_SEND_DATA asd=*(AGGT_SEND_DATA*)ptr; 
@@ -219,20 +203,20 @@ void* internal_aggr_send_process(void* ptr){
 	int i;
 	int temp_node_id, temp_rack_id;
 	
-	char* prty_delta=(char*)malloc(sizeof(char)*chunk_size);
+	char* intl_prty_delta=(char*)malloc(sizeof(char)*chunk_size);
 	char* recv_prty_delta=(char*)malloc(sizeof(char)*chunk_size*asd.data_delta_num);
 
 	//printf("asd.data_delta_num=%d\n", asd.data_delta_num);
 
     //encode the data delta of the internal node
-	encode_data(asd.data_delta, prty_delta, asd.this_data_id, asd.updt_prty_id);
+	encode_data(asd.data_delta, intl_prty_delta, asd.this_data_id, asd.updt_prty_id);
 
 	//encode the data deltas of the leave nodes 
 	for(i=0; i<asd.data_delta_num; i++)
 		encode_data(intnl_recv_data+i*chunk_size, recv_prty_delta, asd.recv_delta_id[i], asd.updt_prty_id);
 
-	//aggregate the data 
-	aggregate_data(prty_delta, asd.data_delta_num, recv_prty_delta);
+	//aggregate the parity delta chunks from leaves 
+	aggregate_data(intl_prty_delta, asd.data_delta_num, recv_prty_delta);
 
 	//send the prty delta
     TRANSMIT_DATA* ped = (TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));
@@ -247,14 +231,12 @@ void* internal_aggr_send_process(void* ptr){
 	for(i=0; i<num_chunks_in_stripe-data_chunks; i++)
 		ped->commit_app[i]=asd.commit_app[i];
 
-    memcpy(ped->buff, prty_delta, chunk_size);
+    memcpy(ped->buff, intl_prty_delta, chunk_size);
 
 	temp_node_id=get_node_id(asd.next_ip);
 	temp_rack_id=get_rack_id(temp_node_id);
 	
     memcpy(ped->next_ip, asd.next_ip, ip_len);
-
-	//printf("temp_node_id=%d, temp_rack_id=%d\n", temp_node_id, temp_rack_id);
 
 	printf("Send Partial Parity Delta to Parity Node: ");
 	print_amazon_vm_info(ped->next_ip);
@@ -269,12 +251,13 @@ void* internal_aggr_send_process(void* ptr){
 		}
 
 
-	free(prty_delta);
 	free(recv_prty_delta);
 	free(ped);
+	free(intl_prty_delta);
 	
 }
 
+/* this function describes the funtionality of internal node in delta commit */
 void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int updt_prty_rack_id, int rack_id, int updt_prty_id, char* data_delta){
 
 	printf("##cau_prty_delta_app_intnl_action:\n");
@@ -282,8 +265,6 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int updt_prty_rack_id, i
 	int global_chunk_id;
 	int stripe_id;
 	int chunk_id;
-
-
 	int prty_id;
 	int count;
 	int id;
@@ -372,7 +353,7 @@ void cau_prty_delta_app_intnl_action(TRANSMIT_DATA* td, int updt_prty_rack_id, i
 
 }
 
-
+/* this function encodes the data delta chunk and send the parity delta chunk to the parity nodes within the same rack */
 void cau_direct_updt_action(TRANSMIT_DATA* td, int data_chunk_id, int rack_id, int prty_chunk_id, char* data_delta){
 
     printf("DIRECT_APP:\n");
@@ -391,7 +372,7 @@ void cau_direct_updt_action(TRANSMIT_DATA* td, int data_chunk_id, int rack_id, i
 	free(pse_data);
 }
 
-
+/* this function is performed at the parity node to receive delta chunks */
 void* prty_recv_data_process(void* ptr){
 
     //printf("recv_data_process works:\n");
@@ -498,7 +479,7 @@ void* prty_recv_data_process(void* ptr){
 
 }
 
-
+/* this function describes the major functionality performed by the parity node */
 void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 
 	printf("Parity Node in Commit:\n");
@@ -520,7 +501,7 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 	data_delta_role=td->data_delta_app_prty_role;
 
     //get the node info and rack info
-	memcpy(local_ip, td->sent_ip, ip_len);//<-------make sure the sent_ip in td should be the local ip of the prty chunk here
+	memcpy(local_ip, td->sent_ip, ip_len);
 	
 	//find the rack where the prty chunk resides 
 	for(i=0; i<total_nodes_num; i++){
@@ -534,9 +515,7 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
     read_old_data(new_prty, td->chunk_store_index);
 
     printf("store_index=%d\n",  td->chunk_store_index);
-	//printf("td->num_recv_chks_prt=%d\n", td->num_recv_chks_prt);
-
-    //td->num_recv_chks_prt includes both data deltas and parity deltas
+	printf("td->num_recv_chks_prt=%d\n", td->num_recv_chks_prt);
 
     int* conn_fd=(int*)malloc(sizeof(int)*td->num_recv_chks_prt);
 	pthread_t* pthread_mt=(pthread_t*)malloc(sizeof(pthread_t)*td->num_recv_chks_prt);
@@ -553,8 +532,6 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 	
 	RECV_PROCESS_PRTY* rpp=(RECV_PROCESS_PRTY *)malloc(sizeof(RECV_PROCESS_PRTY)*td->num_recv_chks_prt);
 	memset(rpp, 0, sizeof(RECV_PROCESS_PRTY)*td->num_recv_chks_prt);
-
-	printf("td->num_recv_chks_prt=%d\n", td->num_recv_chks_prt);
 
     index=0;
 
@@ -588,8 +565,11 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 		close(conn_fd[i]);
 		}
 
-	//calculate the new parity 
-	aggregate_data(new_prty, index, pse_prty);
+	//calculate the new parity. We first copy the first chunk to the new_prty, 
+	//and then aggregate the remaining index-1 partial encoded chunks in pse_prty
+	memcpy(new_prty, pse_prty, chunk_size);
+	aggregate_data(new_prty, index-1, pse_prty+chunk_size);
+	
     flush_new_data(stripe_id, new_prty, global_chunk_id, td->chunk_store_index); 
 
     //notify the client the parity is commtted successfully, the por num is 1111
@@ -605,12 +585,12 @@ void cau_prty_action(TRANSMIT_DATA* td, int rack_id, int server_socket){
 
 }
 
-
+/* this function is performed by the data node that stores updated data chunks */
 void cau_server_commit(CMD_DATA* cmd){
 
 	TRANSMIT_DATA* td=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));
 
-	memcpy(td, cmd, sizeof(CMD_DATA)); //copy the cmd info to the transmit_data_structure
+	memcpy(td, cmd, sizeof(CMD_DATA)); 
 	td->send_size=sizeof(TRANSMIT_DATA);
 
 	printf("Stripe-%d Commit Starts:\n", td->stripe_id);
@@ -662,7 +642,6 @@ void cau_server_commit(CMD_DATA* cmd){
 	cau_read_cal_data_delta(td->stripe_id, data_delta, local_chunk_id, td->chunk_store_index);
 
 	//if it is a data chunk, we consider the commit of m parity chunks 
-
 	for(prty_cmmt=0; prty_cmmt<num_chunks_in_stripe-data_chunks; prty_cmmt++){
 
         td->port_num=SERVER_PORT+data_chunks+prty_cmmt;
