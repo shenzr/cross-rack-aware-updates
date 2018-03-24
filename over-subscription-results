@@ -1,0 +1,33 @@
+RS Configurations: (6,3)
+Arch Configurations: nine nodes organized into three racks with three nodes per rack. A rack keeps all the three parity chunks. 
+
+==============bandwidth=1Gbps, max_log_stripes=100=================
+
+
+==============bandwidth=0.5Gbps, max_log_stripes=100=================
+
+
+Baseline:
+traces/wdev3.csv BASELINE: count=671, cross_rack_updt_traffic=1558, time=141.794931 (143.822638)
+traces/wdev_1.csv BASELINE: count=1055, cross_rack_updt_traffic=2427, time=238.230422 (240.627914)
+traces/rsrch_1.csv BASELINE: count=13738, cross_rack_updt_traffic=34004, time=2921.756074
+traces/hm_1.csv BASELINE: count=28415, cross_rack_updt_traffic=60681, time=6057.509355
+traces/src2_1.csv BASELINE: count=14104, cross_rack_updt_traffic=34422, time=2992.109424
+traces/web_3.csv BASELINE: count=21330, cross_rack_updt_traffic=49800, time=4419.467814
+traces/web_2.csv BASELINE: count=38963, cross_rack_updt_traffic=97404, time=8768.206790
+
+PARIX:
+traces/wdev3.csv, PARIX: count=671, cross_rack_updt_traffic=1570, time=133.027761
+traces/wdev_1.csv, PARIX: count=1055, cross_rack_updt_traffic=2443, time=213.879494
+
+
+CAU:
+traces/wdev3.csv, CAU-1: cross_rack_updt_traffic=681, updt_time=104.176521
+traces/wdev_1.csv, CAU-1: cross_rack_updt_traffic=1069, updt_time=170.337533
+traces/rsrch_1.csv, CAU-1: cross_rack_updt_traffic=16176, updt_time=2403.378725
+
+
+
+
+
+==============bandwidth=0.5Gbps, max_log_stripes=200=================
