@@ -464,7 +464,7 @@ void cau_estbh_log_map(){
 	// it records the bandwidth among regions in amazon experiments
 	// we select the parity node in the region with the maximum bandwidth 
 	// for the rack stores updated data
-	
+/*	
 	int map_priority[rack_num][rack_num]; 
 
 	map_priority[0][0]=0;
@@ -486,7 +486,7 @@ void cau_estbh_log_map(){
 	map_priority[3][1]=2;
 	map_priority[3][2]=1;
 	map_priority[3][3]=3;
-
+*/
 	memset(prty_log_map, -1, sizeof(int)*stripe_num*data_chunks);
 
 	for(i=0; i<stripe_num; i++){
@@ -497,19 +497,19 @@ void cau_estbh_log_map(){
 			its_rack_id=get_rack_id(its_node_id);
 
 			//scan the parity chunks 
-			for(h=0; h<rack_num; h++){
+			//for(h=0; h<rack_num; h++){
 
-				if(h==its_rack_id)
-					continue;
+				//expect_rack_id=map_priority[its_rack_id][h];
 
-				expect_rack_id=map_priority[its_rack_id][h];
+				//if(expect_rack_id==its_rack_id)
+					//continue;
 
 				for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
 
 					prty_nd_id=global_chunk_map[i*num_chunks_in_stripe+data_chunks+j];
 					prty_rack_id=get_rack_id(prty_nd_id);
 
-					if(prty_rack_id==expect_rack_id){
+					if(prty_rack_id!=its_rack_id){
 
 						prty_log_map[i*data_chunks+k]=data_chunks+j;
 						break;
@@ -517,10 +517,10 @@ void cau_estbh_log_map(){
 						}
 					}
 
-				if(prty_rack_id==expect_rack_id)
-					break;
+				//if(prty_rack_id==expect_rack_id)
+				//break;
 
-				}
+				//}
 			}
 		}
 
@@ -1029,8 +1029,6 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
 	free(metadata);
 	
 }
-
-
 
 int main(int argc, char** argv){
 

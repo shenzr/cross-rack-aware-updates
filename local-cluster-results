@@ -1,7 +1,0 @@
-rsrch_1, over_subscription_ratio=1:
-
-BASELINE: count=13738, cross_rack_updt_traffic=39309, time=1764.579412
-BASELINE: count=13738, cross_rack_updt_traffic=39309, time=1769.883958
-
-
-CAU_0: cross_rack_updt_traffic=25434, chunk_size=65536, updt_time=1262.140324
