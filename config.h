@@ -6,7 +6,7 @@
 /* erasure coding settings */
 #define data_chunks           12
 #define num_chunks_in_stripe  16 //n in erasure coding
-#define chunk_size            1024*512 // suppose the chunk size is 16MB
+#define chunk_size            3*sizeof(long) // suppose the chunk size is 16MB
 #define total_nodes_num       20 //we set the number of chunks as the number of nodes in the local-cluster evaluation
 #define max_chunks_per_rack   4
 #define rack_num              4

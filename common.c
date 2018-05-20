@@ -41,7 +41,6 @@ char* gateway_ip="13.229.232.195";
 /* we currently consider all the regions have the same number of nodes */
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack, node_num_per_rack};
 
-<<<<<<< HEAD
 /* the four regions in our test */
 char* region_name[rack_num]={"Seoul", "Singapore", "Sydney", "Tokyo"};
 
@@ -49,12 +48,6 @@ char* region_name[rack_num]={"Seoul", "Singapore", "Sydney", "Tokyo"};
 /*
  * a hash function to check the integrity of received data
  */ 
-=======
-char* region_name[rack_num]={"Seoul", "Singapore", "Sydney", "Tokyo"};
-
-
-// a hash function to check the integrity of received data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 unsigned int RSHash(char* str, unsigned int len)
 {
     unsigned int b    = 378551;
@@ -71,12 +64,9 @@ unsigned int RSHash(char* str, unsigned int len)
     return hash;
 }
 
-<<<<<<< HEAD
 /*
  * Given an ip address, this function locates its node id
  */ 
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int get_node_id(char* given_ip){
 
 	int i;
@@ -95,13 +85,9 @@ int get_node_id(char* given_ip){
 }
 
 
-<<<<<<< HEAD
 /*
  * This function returns the rack_id when given a node id based on the data center architecture
  */ 
-=======
-/* this function returns the rack_id of a given node_id */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int get_rack_id(int node_id){
 
     int i;
@@ -122,13 +108,9 @@ int get_rack_id(int node_id){
 }
 
 
-<<<<<<< HEAD
 /*
  * print the region info and node info 
  */ 
-=======
-/* print the region info and node info */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void print_amazon_vm_info(char* node_ip){
 
 	int node_id=get_node_id(node_ip);
@@ -139,13 +121,9 @@ void print_amazon_vm_info(char* node_ip){
 
 }
 
-<<<<<<< HEAD
 /*
  * print all the elements in an array
  */ 
-=======
-/* print all the elements in an array */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void print_array(int row, int col, int *array){
 
   int i,j; 
@@ -160,13 +138,9 @@ void print_array(int row, int col, int *array){
   	}
 }
 
-<<<<<<< HEAD
 /*
  * calculate the sum of all the elements in an array
  */ 
-=======
-/* calculate the sum of all the elements in an array */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int sum_array(int num, int* arr){
 
 	int count=0;
@@ -179,13 +153,9 @@ int sum_array(int num, int* arr){
 }
 
 
-<<<<<<< HEAD
 /*
  * finds the maximum value of an array
  */ 
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int find_max_array(int* array, int n){
 
 	int i;
@@ -201,12 +171,9 @@ int find_max_array(int* array, int n){
 	return ret;
 }
 
-<<<<<<< HEAD
 /*
  * finds the index of the maximum value in an array
  */ 
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int find_max_array_index(int* array, int n){
 
 	int i;
@@ -226,11 +193,6 @@ int find_max_array_index(int* array, int n){
 }
 
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 /* this function is executed by the metadata server, which 
  * reads the mapping information from a mapping file and keep the 
  * mapping info in the memory 
@@ -273,25 +235,15 @@ void read_chunk_map(char* map_file){
 	  stripe_id++;
 	}
 
-<<<<<<< HEAD
 	fclose(fd);
-=======
-
-	fclose(fd);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 }
 
 
 
 
-<<<<<<< HEAD
 /* 
  * this function reads the ip address from the nic eth0
  */ 
-=======
-/* this function reads the ip address from the nic eth0 */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void GetLocalIp(char* local_ip)
 {
 
@@ -316,13 +268,9 @@ void GetLocalIp(char* local_ip)
 }
 
 
-<<<<<<< HEAD
 /*
  * this function gets the ip of the local node and returns the local_node_id in the node_ip_set
  */ 
-=======
-//this function gets the host_ip and returns the local_node_id in the node_ip_set
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int get_local_node_id(){
 
     char local_ip[ip_len];
@@ -330,28 +278,13 @@ int get_local_node_id(){
     int ret;
 
     GetLocalIp(local_ip);
-<<<<<<< HEAD
-=======
-    //printf("server_ip=%s\n",local_ip);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
 	if(if_gateway_open==1){
 
        //locate the node id
-<<<<<<< HEAD
        for(i=0; i<total_nodes_num; i++)
         if((ret=strcmp(node_ip_set[i],local_ip))==0)
             break;
-=======
-       for(i=0; i<total_nodes_num; i++){
-
-        if((ret=strcmp(node_ip_set[i],local_ip))==0)
-            break;
-
-		return i;
-
-       }
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	 }
 
 	else {
@@ -359,27 +292,16 @@ int get_local_node_id(){
 		for(i=0; i<total_nodes_num; i++)
 			if(strcmp(local_ip, inner_ip_set[i])==0)
 				break;
-<<<<<<< HEAD
 		}
 
 	return i;
-=======
-
-		return i;
-
-		}
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
 }
 
 
-<<<<<<< HEAD
 /*
  * This function initializes a client socket 
  */ 
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int init_client_socket(int client_port_num){
 
     //set client_addr info
@@ -396,11 +318,7 @@ int init_client_socket(int client_port_num){
     if(client_socket < 0)
     {
         perror("Create Socket Failed!\n");
-<<<<<<< HEAD
         exit(1);
-=======
-        //exit(1);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     }
 
 	setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
@@ -411,13 +329,9 @@ int init_client_socket(int client_port_num){
 
 
 
-<<<<<<< HEAD
 /*
  * send data (e.g., data, cmd, ack) 
  */ 
-=======
-// this function is executed by the internal node, which send the aggregated data delta to the parity node for final encoding
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, CMD_DATA* cmd, int send_data_type){
 
     int sent_len;
@@ -425,12 +339,7 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
 	int client_socket;
 	int data_size;
 
-<<<<<<< HEAD
     // judge the type of sent data
-=======
-	//printf("send_port=%d\n", port_num);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(send_data_type==UPDT_DATA)
 		data_size=sizeof(TRANSMIT_DATA);
 
@@ -451,17 +360,10 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
 	else
 		memcpy(send_buff, cmd, sizeof(CMD_DATA));
 
-<<<<<<< HEAD
 	// send the data through socket
 	client_socket=init_client_socket(0);
 
     // set server_addr info
-=======
-	//send the data through socket
-	client_socket=init_client_socket(0);
-
-    //set server_addr info
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     struct sockaddr_in server_addr;
     bzero(&server_addr,sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -474,13 +376,7 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
     }
     server_addr.sin_port = htons(port_num);
 
-<<<<<<< HEAD
     while(connect(client_socket,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0);
-=======
-
-    while(connect(client_socket,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0);
-    //printf("connect success!\n");
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     
     sent_len=0;
     while(sent_len < data_size){
@@ -492,12 +388,7 @@ void send_data(TRANSMIT_DATA *td, char *server_ip, int port_num, ACK_DATA* ack, 
 	ret=close(client_socket);
 	if(ret==-1)
 		perror("close_send_data_socket error!\n");
-<<<<<<< HEAD
 
-=======
-	
-    //printf("send completes!\n");
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 }
 
 
@@ -509,11 +400,8 @@ void send_req(UPDT_REQ_DATA* req, char* server_ip, int port_num, META_INFO* meta
 	int client_socket;
 	int data_size;
 
-<<<<<<< HEAD
 	data_size=0;
 
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(info_type==REQ_INFO)
 		data_size=sizeof(UPDT_REQ_DATA);
 
@@ -561,13 +449,9 @@ void send_req(UPDT_REQ_DATA* req, char* server_ip, int port_num, META_INFO* meta
 	
 }
 
-<<<<<<< HEAD
 /*
  * This function initiates a server socket
  */
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int init_server_socket(int port_num){
 
 	int server_socket;
@@ -646,13 +530,9 @@ int update_loged_chunks(int given_chunk_id){
 }
 
 
-<<<<<<< HEAD
 /*
  * this function transforms a char type to an integer type
  */ 
-=======
-/* this function transforms a char type to an integer type */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void trnsfm_char_to_int(char *char_data, long long *data){
 
     int i=0;
@@ -669,13 +549,9 @@ void trnsfm_char_to_int(char *char_data, long long *data){
 
 
 
-<<<<<<< HEAD
 /* 
  * this function truncates a component from a string according to a given divider 
  */
-=======
-/* this function truncate a component from a string according to a given divider */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void new_strtok(char string[], char divider, char result[]){
 
     int i,j;
@@ -708,36 +584,21 @@ void new_strtok(char string[], char divider, char result[]){
 
 
 
-<<<<<<< HEAD
 /* 
  * generate a random string for the given length
  */ 
 void gene_radm_buff(char* buff, int len){
 
     int i;
-=======
-//generate a random string with the size of len
-void gene_radm_buff(char* buff, int len){
-
-    int i;
-	
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     char alphanum[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     for(i=0; i<chunk_size; i++)
         buff[i]=alphanum[i%(sizeof(alphanum)-1)];
-<<<<<<< HEAD
 }
 
 /*
  * count the number of non-negatives in an array
  */ 
-=======
-
-}
-
-//count the number of non-negatives in an array
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int count_non_ngtv(int* arr, int len){
 
 
@@ -753,14 +614,10 @@ int count_non_ngtv(int* arr, int len){
 }
 
 
-<<<<<<< HEAD
 /*
  * this function first finds the data chunk stored on this node when given a stripe_id
  * it then calculates the local_data_chunk_id and returns it
  */
-=======
-//given the nodes_in_racks, the set of ip addresses, this function gets the rack_id that the node resides in
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int get_local_chunk_id(int stripe_id){
 
     int local_node_id;
@@ -769,13 +626,7 @@ int get_local_chunk_id(int stripe_id){
 
     local_node_id=get_local_node_id();
 
-<<<<<<< HEAD
     // get the local_chunk_id
-=======
-	//printf("local_node_id=%d\n", local_node_id);
-
-    //get the local_chunk_id
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     for(i=0; i<data_chunks; i++){
 
         if(global_chunk_map[stripe_id*num_chunks_in_stripe+i]==local_node_id)
@@ -790,14 +641,8 @@ int get_local_chunk_id(int stripe_id){
 		
 		}
 
-<<<<<<< HEAD
 	// we promise that the chunk_id exists, as we always select a node that has that chunk for partial encoding
     local_data_chunk_id=stripe_id*data_chunks+i; 
-=======
-    local_data_chunk_id=stripe_id*data_chunks+i; //we promise that the chunk_id exists, as we always select a node that has that chunk for partial encoding
-
-    //printf("local_data_chunk_id=%d\n",local_data_chunk_id);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
     return local_data_chunk_id;
 
@@ -806,13 +651,9 @@ int get_local_chunk_id(int stripe_id){
 
 
 
-<<<<<<< HEAD
 /*
  * given the chunk_map, this function records the store orders of all chunks on every node
  */
-=======
-//given the chunk_map, this function outputs the store order of each chunk on every node
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void get_chunk_store_order(){
 
     int i,j;
@@ -825,16 +666,10 @@ void get_chunk_store_order(){
         for(i=0; i<stripe_num; i++){
           for(j=0; j<num_chunks_in_stripe; j++){
 
-<<<<<<< HEAD
 			  // use "GLOBAL" order to represent store order of "ALL" chunks
               if(global_chunk_map[i*num_chunks_in_stripe+j]==k){
 
                 chunk_store_order[k*max_num_store_chunks+num_store_chunks[k]]=i*num_chunks_in_stripe+j; 
-=======
-              if(global_chunk_map[i*num_chunks_in_stripe+j]==k){
-
-                chunk_store_order[k*max_num_store_chunks+num_store_chunks[k]]=i*num_chunks_in_stripe+j; // use "GLOBAL" order to represent store order of ALL chunks
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
                 num_store_chunks[k]++;
 
                 if(num_store_chunks[k]>max_num_store_chunks) {
@@ -850,13 +685,9 @@ void get_chunk_store_order(){
     }
 }
 
-<<<<<<< HEAD
 /*
  * this function is to calculate the delta of two regions
  */
-=======
-// this function is to calculate the data delta of two regions
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void bitwiseXor(char* result, char* srcA, char* srcB, int length) {
 
     int i;
@@ -874,13 +705,9 @@ void bitwiseXor(char* result, char* srcA, char* srcB, int length) {
 }
 
 
-<<<<<<< HEAD
 /* 
  * for each received chunk, this function adds them together and outputs a aggregated result
  */
-=======
-//for each receive data, perform XOR operations to them
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void aggregate_data(char* data_delta, int num_recv_chnks, char* ped){
 
 	//printf("in aggregated_data:\n");
@@ -902,15 +729,8 @@ void aggregate_data(char* data_delta, int num_recv_chnks, char* ped){
 	//printf("start_addr=%x:\n",intnl_recv_data);
 
     for(i=0; i<num_recv_chnks; i++){
-<<<<<<< HEAD
 		
         bitwiseXor(res, addrA, ped+i*chunk_size*sizeof(char), chunk_size*sizeof(char));
-=======
-
-        //printf("res_addr=%p, addrA=%p\n", res, addrA);
-        bitwiseXor(res, addrA, ped+i*chunk_size*sizeof(char), chunk_size*sizeof(char));
-	    //printf("res=%x, addrA_addr=%x\n", tmp, addrA);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
         tmp=addrA;
         addrA=res;
         res=tmp;
@@ -918,18 +738,11 @@ void aggregate_data(char* data_delta, int num_recv_chnks, char* ped){
 	
     memcpy(data_delta, addrA, chunk_size);
 
-<<<<<<< HEAD
 }
 
 /*
  * This function writes the new data to the underlying disk
  */
-=======
-	//printf("out aggregated_data:\n");
-
-}
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void flush_new_data(int stripe_id, char* new_data, int global_chunk_id, int stored_index){
 
     int fd;
@@ -937,7 +750,6 @@ void flush_new_data(int stripe_id, char* new_data, int global_chunk_id, int stor
     char* tmp_buff=NULL;
 	
 	ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
-<<<<<<< HEAD
 	if(ret){
 		printf("ERROR: posix_memalign: %s\n", strerror(ret));
 		exit(1);
@@ -953,26 +765,10 @@ void flush_new_data(int stripe_id, char* new_data, int global_chunk_id, int stor
         printf("write data error!\n");
 		exit(1);
     	}
-=======
-	if(ret)
-		printf("ERROR: posix_memalign: %s\n", strerror(ret));
-
-	memcpy(tmp_buff, new_data, chunk_size);
-
-    struct timeval bg_tm, ed_tm;
-	gettimeofday(&bg_tm, NULL);
-
-    fd=open("data_file", O_RDWR);
-    lseek(fd, stored_index*chunk_size, SEEK_SET);
-    ret=write(fd, tmp_buff, chunk_size);
-    if(ret!=chunk_size)
-        printf("write data error!\n");
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
     close(fd);
 	free(tmp_buff);
 
-<<<<<<< HEAD
 }
 
 /*
@@ -980,35 +776,16 @@ void flush_new_data(int stripe_id, char* new_data, int global_chunk_id, int stor
  */ 
 void listen_ack(ACK_DATA* ack, char* recv_buff, int stripe_id, int updt_dt_id, int updt_prty_id, int port_num, int op_type){
 
-=======
-    gettimeofday(&ed_tm, NULL);
-    //printf("flush_write_time=%lf\n", ed_tm.tv_sec-bg_tm.tv_sec+(ed_tm.tv_usec-bg_tm.tv_usec)*1.0/1000000);
-
-}
-
-void listen_ack(ACK_DATA* ack, char* recv_buff, int stripe_id, int updt_dt_id, int updt_prty_id, int port_num, int op_type){
-
-   //printf("listen_ack:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    int recv_len; 
    int read_size;
    int ntf_connfd;
    int ntf_socket;
    int ret;
 
-<<<<<<< HEAD
    // initialize socket information
    ntf_socket=init_server_socket(port_num);
    
    // initialize the sender info
-=======
-
-   //initial socket information
-   ntf_socket=init_server_socket(port_num);
-   
-   //init the sender info
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    struct sockaddr_in sender_addr;
    socklen_t length=sizeof(sender_addr);
    
@@ -1018,11 +795,6 @@ void listen_ack(ACK_DATA* ack, char* recv_buff, int stripe_id, int updt_dt_id, i
    }
 
    ntf_connfd = accept(ntf_socket, (struct sockaddr*)&sender_addr, &length);
-<<<<<<< HEAD
-=======
-   //printf("receive ack from: ");
-   //print_amazon_vm_info(inet_ntoa(sender_addr.sin_addr));
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
    recv_len=0; 
    while(recv_len<sizeof(ACK_DATA)){
@@ -1030,16 +802,10 @@ void listen_ack(ACK_DATA* ack, char* recv_buff, int stripe_id, int updt_dt_id, i
 	   read_size = read(ntf_connfd, recv_buff+recv_len, sizeof(ACK_DATA)-recv_len);
 	   recv_len+=read_size;
 
-<<<<<<< HEAD
-=======
-	   //printf("recv_len=%d, expected_size=%lu\n", recv_len, sizeof(TRANSMIT_DATA));
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	}
 
 	close(ntf_connfd);
 	ret=close(ntf_socket);
-<<<<<<< HEAD
 	if(ret==-1){
 		perror("listen_ack: close_socket error!\n");
 		exit(1);
@@ -1053,35 +819,6 @@ void listen_ack(ACK_DATA* ack, char* recv_buff, int stripe_id, int updt_dt_id, i
  * the parity chunks in every stripe are encoded by using the same matrix
  * this function returns the encoding coefficient for a given chunk
  */
-=======
-	if(ret==-1)
-		perror("listen_ack: close_socket error!\n");
-
-    memcpy(ack, recv_buff, sizeof(ACK_DATA));
-
-	//printf("op_type=%d, stripe_id=%d, updt_dt_id=%d, updt_prty_id=%d\n", op_type, stripe_id, updt_dt_id, updt_prty_id);
-
-/*
-    //listen ack for parity commit
-    if((updt_dt_id==-1) && (cmt_ntf_td->op_type==op_type) && (cmt_ntf_td->stripe_id==stripe_id) && (cmt_ntf_td->updt_prty_id==updt_prty_id))
-         printf("RECV_PRTY_CMMT_ACK: (stripe_id=%d, updt_parity_id=%d)\n", stripe_id, updt_prty_id);
-
-    //listen ack for data update
-	else if((updt_prty_id==-1) && (cmt_ntf_td->data_chunk_id==updt_dt_id) && (cmt_ntf_td->op_type==op_type))
-		printf("RECV_DATA_UPDT_ACK: (stripe_id=%d, updt_dt_id=%d)\n", stripe_id, updt_dt_id);
-
-    else {
-       printf("RECV_ACK ERROR!\n");
-       exit(1);
-	   
-    }
-*/
-
-}
-
-//the parity chunks in every stripe are encoded by using the same matrix
-//this function returns the encoding coefficient for a given chunk
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int obtain_encoding_coeff(int given_chunk_id, int prtyid_to_update){
 
 
@@ -1089,56 +826,31 @@ int obtain_encoding_coeff(int given_chunk_id, int prtyid_to_update){
 
     index=given_chunk_id%data_chunks;
 
-<<<<<<< HEAD
-=======
-	//printf("prty_to_update=%d, index=%d\n", prtyid_to_update, index);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     return encoding_matrix[prtyid_to_update*data_chunks+index];
 }
 
 
-<<<<<<< HEAD
 /*
  * This encodes a data chunk based on the encoding coefficient of a given parity chunk
  */
 void encode_data(char* data, char* pse_coded_data, int chunk_id, int updt_prty){
 
     int ecd_cef=obtain_encoding_coeff(chunk_id,updt_prty);
-=======
-void encode_data(char* data, char* pse_coded_data, int chunk_id, int updt_prty){
-
-	//printf("encode_data works:\n");
-
-    int ecd_cef=obtain_encoding_coeff(chunk_id,updt_prty);
-	//printf("encod_marix[%d][%d]=encod_coeff=%d\n", updt_prty, chunk_id%data_chunks, ecd_cef);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     galois_w08_region_multiply(data, ecd_cef, chunk_size, pse_coded_data, 0);
 
 }
 
-<<<<<<< HEAD
 /*
  * send ack to the destination node
  */
-=======
-//send ack to the destined node
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port_num, int op_type){
 
     int node_id; 
 	int des_node_id;
 	int rack_id;
 	int des_rack_id;
-<<<<<<< HEAD
 	
 	//initialize ack_data
-=======
-
-	//init the sent info
-	
-	//init ack_data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
 
 	ack->send_size=sizeof(ACK_DATA);
@@ -1148,22 +860,8 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
 	ack->updt_prty_id=prty_id;
 	ack->port_num=port_num;
 	memcpy(ack->next_ip, destined_ip, ip_len);
-<<<<<<< HEAD
 
 	// if the destination node is the client node, then send the ack to the gateway if the gateway is opened 
-=======
-/*
-	printf("ack->send_size=%d\n", ack->send_size);
-	printf("ack->op_type=%d\n", ack->op_type);
-	printf("ack->stripe_id=%d\n", ack->stripe_id);
-	printf("ack->data_chunk_id=%d\n", ack->data_chunk_id);
-	printf("ack->updt_prty_id=%d\n", ack->updt_prty_id);
-	printf("ack->port_num=%d\n", ack->port_num);
-	printf("ack->next_ip=%s\n", ack->next_ip);
-*/
-
-	//if the destined node is the metadata node, then send the ack to the gateway first 
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(strcmp(destined_ip, client_ip)==0){
 
 		memcpy(ack->next_ip, client_ip, ip_len);
@@ -1178,25 +876,15 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
 
 		}
 
-<<<<<<< HEAD
     // determine the source node and the destination node and their racks
-=======
-    //determine the source node and the destination node and their racks
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	node_id=get_local_node_id();
 	rack_id=get_rack_id(node_id);
 
 	des_node_id=get_node_id(destined_ip);
 	des_rack_id=get_rack_id(des_node_id);
 
-<<<<<<< HEAD
     // if the gateway is opened and the two nodes are in different racks, then forward the data to the gateway first
     // else direct send the data to the destination node
-=======
-	//printf("send ack: node_id=%d, rack_id=%d, des_node_id=%d, des_rack_id=%d\n", node_id, rack_id, des_node_id, des_rack_id);
-
-    //if the gateway is opened and the two nodes are in different racks, then forward the data to the gateway first
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if((if_gateway_open==1) && (des_rack_id!=rack_id)){
 
 		memcpy(ack->next_ip, destined_ip, ip_len);
@@ -1210,7 +898,6 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
 	
 	free(ack);
 
-<<<<<<< HEAD
 }
 
 
@@ -1218,25 +905,13 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
  * given a node_id and a global_chunk_id, return the storage index of that chunk on that node 
  * the storage index is to calculate the offset of the stored data on that node
  */
-=======
-	//printf("send_ack finishes\n");
-
-}
-
-
-//given a node_id and a global_chunk_id, return the store index of that chunk on that node 
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int locate_store_index(int node_id, int global_chunk_id){
 
     int start_index, end_index;
 	int mid_index;
 	int store_index;
 	
-<<<<<<< HEAD
 	// locate the stored order of given_chunk_id by using binary search
-=======
-	//locate the stored order of given_chunk_id by using binary search
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     start_index=0;
     end_index=num_store_chunks[node_id]-1;
 
@@ -1271,12 +946,6 @@ int locate_store_index(int node_id, int global_chunk_id){
 
         }
 
-<<<<<<< HEAD
-=======
-		//printf("start_chunk=%d, end_chunk=%d\n", chunk_store_order[node_id*max_num_store_chunks+start_index], chunk_store_order[node_id*max_num_store_chunks+end_index]);
-		//printf("global_chunk_id=%d\n", global_chunk_id);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		if(start_index>=end_index){
 			printf("search_global_chunk_id error!\n");
 			exit(1);
@@ -1286,27 +955,15 @@ int locate_store_index(int node_id, int global_chunk_id){
 
 	return store_index;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 }
 
 
 
-<<<<<<< HEAD
 /* 
  * receive the data and copy the buffer to a desinated area
  */
 void* data_mvmnt_process(void* ptr){
 
-=======
-//receive the data and copy the buffer to a desinated area
-void* data_mvmnt_process(void* ptr){
-
-    //printf("data_mvmnt_process works:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     RECV_PROCESS_DATA rpd=*(RECV_PROCESS_DATA *)ptr;
 
     int recv_len;
@@ -1314,11 +971,7 @@ void* data_mvmnt_process(void* ptr){
 
     char* recv_buff=(char*)malloc(sizeof(TRANSMIT_DATA));
 
-<<<<<<< HEAD
     // receive data
-=======
-    //receive data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     recv_len=0;
     while(recv_len < sizeof(TRANSMIT_DATA)){
 
@@ -1327,11 +980,7 @@ void* data_mvmnt_process(void* ptr){
 
     }
 
-<<<<<<< HEAD
     // copy the data 
-=======
-    //copy the data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     TRANSMIT_DATA* td=malloc(sizeof(TRANSMIT_DATA));
     memcpy(td, recv_buff, sizeof(TRANSMIT_DATA));
 
@@ -1349,19 +998,11 @@ void* data_mvmnt_process(void* ptr){
 }
 
 
-<<<<<<< HEAD
 /*
  * receive the data and copy the buffer to a destination area
  */
 void* recv_data_process(void* ptr){
 
-=======
-//receive the data and copy the buffer to a desinated area
-void* recv_data_process(void* ptr){
-
-    //printf("recv_data_process works:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     RECV_PROCESS_DATA rpd=*(RECV_PROCESS_DATA *)ptr;
 
     int recv_len;
@@ -1369,11 +1010,7 @@ void* recv_data_process(void* ptr){
 
     char* recv_buff=(char*)malloc(sizeof(TRANSMIT_DATA));
 
-<<<<<<< HEAD
     // receive data
-=======
-    //receive data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     recv_len=0;
     while(recv_len < sizeof(TRANSMIT_DATA)){
 
@@ -1382,19 +1019,11 @@ void* recv_data_process(void* ptr){
 
     }
 
-<<<<<<< HEAD
     // copy the data
     TRANSMIT_DATA* td=malloc(sizeof(TRANSMIT_DATA));
     memcpy(td, recv_buff, sizeof(TRANSMIT_DATA));
 
 	// copy the delta and record the data id
-=======
-    //copy the data
-    TRANSMIT_DATA* td=malloc(sizeof(TRANSMIT_DATA));
-    memcpy(td, recv_buff, sizeof(TRANSMIT_DATA));
-
-	//copy the delta and record the data id
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     memcpy(intnl_recv_data+chunk_size*sizeof(char)*rpd.recv_id, td->buff, chunk_size*sizeof(char));
 	intnl_recv_data_id[td->data_chunk_id]=1;
 
@@ -1406,23 +1035,12 @@ void* recv_data_process(void* ptr){
 }
 
 
-<<<<<<< HEAD
 /* receive data by using multiple threads
  * if @flag_tag=1, then it performs recv_data_process
  * if @flag_tag=2, then it performs data_mvmnt_process
  */
 void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_tag){
 
-=======
-//receive data by using multiple threads
-//if @flag_tag=1, then it performs recv_data_process
-//if @flag_tag=2, then it performs data_mvmnt_process
-void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_tag){
-
-
-    //printf("para_recv_data starts:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     int i;
     int server_socket;
     int max_connctn;
@@ -1437,11 +1055,7 @@ void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_ta
 
 	server_socket=init_server_socket(port_num);
 
-<<<<<<< HEAD
     // initialize the sender info
-=======
-    //init the sender info
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     struct sockaddr_in sender_addr;
     socklen_t length=sizeof(sender_addr);
 
@@ -1457,10 +1071,6 @@ void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_ta
     while(1){
 
         connfd[index] = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
-<<<<<<< HEAD
-=======
-        //printf("receive connection from %s\n",inet_ntoa(sender_addr.sin_addr));
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
         rpd[index].connfd=connfd[index];
         rpd[index].recv_id=index;
@@ -1472,24 +1082,12 @@ void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_ta
 			pthread_create(&recv_data_thread[index], NULL, data_mvmnt_process, (void *)(rpd+index));
         index++;
 
-<<<<<<< HEAD
         if(index>=num_recv_chnks)
 			break;
         	
     }
 
     for(i=0; i<num_recv_chnks; i++){
-=======
-        if(index>=num_recv_chnks){
-			//printf("index>=num_recv_chunks\n");
-			break;
-        	}
-
-    }
-
-    for(i=0; i<num_recv_chnks; i++){
-		//printf("waiting join: i=%d, num_recv_chnks=%d\n", i, num_recv_chnks);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
         pthread_join(recv_data_thread[i], NULL);
 		close(connfd[i]);
     	}
@@ -1498,7 +1096,6 @@ void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_ta
 	free(connfd);
 	
 	ret=close(server_socket);
-<<<<<<< HEAD
 	if(ret==-1){
 	   perror("close_para_recv_data error!\n");
 	   exit(1);
@@ -1509,23 +1106,12 @@ void para_recv_data(int stripe_id, int num_recv_chnks, int port_num, int flag_ta
 /*
  * read old data from underlying disk for a given store_index
  */
-=======
-	if(ret==-1)
-	   perror("close_para_recv_data error!\n");
-	
-	//printf("recv_completes\n");
-
-}
-
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void read_old_data(char* read_buff, int store_index){
 
     int ret;
     int fd;
 	char* tmp_buff=NULL;
 
-<<<<<<< HEAD
     // read the old data from data_file
 	ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
 	if(ret){
@@ -1536,26 +1122,12 @@ void read_old_data(char* read_buff, int store_index){
     fd=open("data_file", O_RDONLY);
     lseek(fd, store_index*chunk_size, SEEK_SET);
 	
-=======
-    //read the old data from data_file
-	ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
-	if(ret)
-		printf("ERROR: posix_memalign: %s\n", strerror(ret));
-		
-
-    fd=open("data_file", O_RDONLY);
-    lseek(fd, store_index*chunk_size, SEEK_SET);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     ret=read(fd, tmp_buff, chunk_size);
     if(ret!=chunk_size){
         printf("read data error!\n");
 		exit(1);
     	}
 
-<<<<<<< HEAD
-=======
-    //printf("read old data succeeds\n");
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	memcpy(read_buff, tmp_buff, chunk_size);
 
     close(fd);
@@ -1563,20 +1135,15 @@ void read_old_data(char* read_buff, int store_index){
 
 }
 
-<<<<<<< HEAD
 /*
  * in-place write the new data to an address specified by the store_index
  */
-=======
-//in-place write the new data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void write_new_data(char* write_buff, int store_index){
 
    int fd; 
    int ret; 
    char* tmp_buff=NULL;
 
-<<<<<<< HEAD
    ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
    if(ret){
 		printf("ERROR: posix_memalign: %s\n", strerror(ret));
@@ -1596,65 +1163,28 @@ void write_new_data(char* write_buff, int store_index){
 	   exit(1);
    	}
 
-=======
-   struct timeval bg_tm, ed_tm;
-   gettimeofday(&bg_tm, NULL);
-
-   ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
-   if(ret)
-		printf("ERROR: posix_memalign: %s\n", strerror(ret));
-   
-   memcpy(tmp_buff, write_buff, chunk_size);
-
-   fd=open("data_file", O_RDWR);
-   lseek(fd, store_index*chunk_size, SEEK_SET);
-   ret=write(fd, tmp_buff, chunk_size);
-   if(ret!=chunk_size)
-	   printf("write data error!\n");
-
-   //printf("write new data succeeds\n");
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    
    close(fd);
    free(tmp_buff);
 
-<<<<<<< HEAD
 }
 
 /*
  * it generates a thread to send data 
  */ 
-=======
-   gettimeofday(&ed_tm, NULL);
-   //printf("write_new_data_time=%lf\n", ed_tm.tv_sec-bg_tm.tv_sec+(ed_tm.tv_usec-bg_tm.tv_usec)*1.0/1000000);
-
-}
-
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void* send_updt_data_process(void* ptr){
 
    TRANSMIT_DATA td = *(TRANSMIT_DATA *)ptr;
 
-<<<<<<< HEAD
-=======
-   printf("send_updt_data to: ");
-   print_amazon_vm_info(td.sent_ip);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    send_data((TRANSMIT_DATA *)ptr, td.sent_ip, td.port_num, NULL, NULL, UPDT_DATA);
 
    return NULL;
 }
 
 
-<<<<<<< HEAD
 /*
  * send the new data to the num_updt_prty parity nodes
  */
-=======
-//send the new data to the num_updt_prty parity chunks
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int port_num){
 
    int j; 
@@ -1663,15 +1193,9 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int po
    int node_id;
    int rack_id;
 
-<<<<<<< HEAD
    TRANSMIT_DATA* td_mt=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA)*num_updt_prty);
 
    // get the rack_id of the local node
-=======
-   //brodcast the new data to m parity chunks
-   TRANSMIT_DATA* td_mt=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA)*num_updt_prty);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    node_id=get_local_node_id();
    rack_id=get_rack_id(node_id);
    
@@ -1680,11 +1204,7 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int po
 
    for(j=0; j<num_updt_prty; j++){
    
-<<<<<<< HEAD
 	   // initialize td structure
-=======
-	   //init td structure
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	   td_mt[j].send_size=sizeof(TRANSMIT_DATA);
 	   td_mt[j].op_type=op_type; 
 	   td_mt[j].data_chunk_id=td->data_chunk_id;
@@ -1698,12 +1218,7 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int po
 	   prty_node_id=td->updt_prty_nd_id[j]; 
 	   prty_rack_id=get_rack_id(prty_node_id);
 
-<<<<<<< HEAD
        // if send data across racks, we have to check if the gateway is opened
-=======
-	   //printf("prty_node_id=%d, prty_ip=%s\n", prty_node_id, node_ip_set[prty_node_id]);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	   if((if_gateway_open==1) && (rack_id!=prty_rack_id)){
 		  memcpy(td_mt[j].sent_ip, gateway_ip, ip_len);
 		  memcpy(td_mt[j].next_ip, node_ip_set[prty_node_id], ip_len);
@@ -1712,19 +1227,11 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int po
 	   else 
 	   	memcpy(td_mt[j].sent_ip, node_ip_set[prty_node_id], ip_len);
 
-<<<<<<< HEAD
-=======
-	   //printf("td->stripe_id=%d, td->updt_prty_nd_id[%d]=%d\n", td->stripe_id, j, prty_node_id);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	   pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
    
 	   }
    
-<<<<<<< HEAD
    // join the threads
-=======
-   //join the threads
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    for(j=0; j<num_updt_prty; j++)
 	   pthread_join(parix_updt_thread[j], NULL);
 
@@ -1733,19 +1240,11 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int po
 
 }
 
-<<<<<<< HEAD
 /*
  * a thread receives ack 
  */
 void* recv_ack_process(void* ptr){
 
-=======
-
-void* recv_ack_process(void* ptr){
-
-	//printf("recv_ack_process works:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	RECV_PROCESS_DATA rpd=*(RECV_PROCESS_DATA *)ptr;
 
     int recv_len;
@@ -1753,11 +1252,7 @@ void* recv_ack_process(void* ptr){
 
     char* recv_buff=(char*)malloc(sizeof(ACK_DATA));
 
-<<<<<<< HEAD
     // receive data
-=======
-    //receive data
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     recv_len=0;
     while(recv_len < sizeof(ACK_DATA)){
 
@@ -1766,18 +1261,11 @@ void* recv_ack_process(void* ptr){
 
     }
 
-<<<<<<< HEAD
     // copy the recv_buff to an ack structure
     ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
     memcpy(ack, recv_buff, sizeof(ACK_DATA));
 
     // judge the ack for different operations
-=======
-    //copy the data
-    ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
-    memcpy(ack, recv_buff, sizeof(ACK_DATA));
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(ack->op_type==PARIX_UPDT_CMLT)
 		updt_cmlt_count[ack->updt_prty_id]++;
 
@@ -1793,11 +1281,6 @@ void* recv_ack_process(void* ptr){
 	else if(ack->op_type==MVMT_CMLT)
 		mvmt_count[ack->data_chunk_id]++;
 
-<<<<<<< HEAD
-=======
-	//printf("recv ack: td->stripe_id=%d, td->op_type=%d, td->from_ip=%s, td->next_ip=%s\n", td->stripe_id, td->op_type, td->from_ip, td->next_ip);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	free(ack);
 	free(recv_buff);
 
@@ -1806,19 +1289,11 @@ void* recv_ack_process(void* ptr){
 }
 
 
-<<<<<<< HEAD
 /*
  * receive data by using multiple threads
  */
 void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
 
-=======
-//receive data by using multiple threads
-void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
-
-    //printf("para_recv_data starts:\n");
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     int i;
     int server_socket;
     int max_connctn;
@@ -1840,11 +1315,7 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
 
 		}
 
-<<<<<<< HEAD
     // initialize socket information
-=======
-    //initial socket information
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	server_socket=init_server_socket(port_num);
 
     if(listen(server_socket,max_connctn) == -1){
@@ -1859,21 +1330,14 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
     while(1){
 
         connfd[index] = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
-<<<<<<< HEAD
 
         //printf("Recv Ack from: ");
 		//print_amazon_vm_info(inet_ntoa(sender_addr.sin_addr));
-=======
-        //printf("receive ack from %s\n",inet_ntoa(sender_addr.sin_addr));
-        //printf("Recv Ack from: ");
-		print_amazon_vm_info(inet_ntoa(sender_addr.sin_addr));
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
         rpd[index].connfd=connfd[index];
         rpd[index].recv_id=index;
 
 		pthread_create(&recv_data_thread[index], NULL, recv_ack_process, (void *)(rpd+index));
-<<<<<<< HEAD
 
 		// if receiving enough data 
         index++;
@@ -1886,25 +1350,6 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
     for(i=0; i<num_recv_chnks; i++)
         pthread_join(recv_data_thread[i], NULL);
     	
-=======
-		
-        index++;
-
-		//printf("index=%d, expect_num_recv_acks=%d\n", index, num_recv_chnks);
-
-        if(index>=num_recv_chnks){
-			//printf("index>=num_recv_chunks\n");
-			break;
-        	}
-
-    }
-
-    for(i=0; i<num_recv_chnks; i++){
-		//printf("waiting join: i=%d, num_recv_chnks=%d\n", i, num_recv_chnks);
-        pthread_join(recv_data_thread[i], NULL);
-    	}
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	for(i=0; i<num_recv_chnks; i++)
 		close(connfd[i]);
 
@@ -1914,18 +1359,14 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
 
 }
 
-<<<<<<< HEAD
 /*
  * append a data chunk to the end of a file
  */
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void log_write(char* filename, TRANSMIT_DATA* td){
 
    int ret;
    char* tmp_buff=NULL;
    ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
-<<<<<<< HEAD
    if(ret){
 	   printf("ERROR: posix_memalign: %s\n", strerror(ret));
 	   exit(1);
@@ -1934,24 +1375,13 @@ void log_write(char* filename, TRANSMIT_DATA* td){
    memcpy(tmp_buff, td->buff, chunk_size);
 
    // move fd to the end of a file
-=======
-   if(ret)
-	   printf("ERROR: posix_memalign: %s\n", strerror(ret));
-
-   memcpy(tmp_buff, td->buff, chunk_size);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    int fd=open(filename, O_RDWR | O_CREAT, 0644);
    lseek(fd, 0, SEEK_END);
    
    ret=write(fd, tmp_buff, chunk_size);
    if(ret!=chunk_size){
 	   perror("write_log_file_error!\n");
-<<<<<<< HEAD
 	   exit(1);
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    }
 
    free(tmp_buff);
@@ -1960,12 +1390,9 @@ void log_write(char* filename, TRANSMIT_DATA* td){
 }
 
 
-<<<<<<< HEAD
 /*
  * This function is performed by the gateway, which forwards a updated data to a destination node
  */
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 
     /* record the source ip address */
@@ -1974,12 +1401,9 @@ void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 	
 }
 
-<<<<<<< HEAD
 /*
  * This function is performed by the gateway, which forwards an ack to a destination node
  */
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
 void gateway_forward_ack_info(ACK_DATA* ack){
 
@@ -1987,13 +1411,10 @@ void gateway_forward_ack_info(ACK_DATA* ack){
 	
 }
 
-<<<<<<< HEAD
 /*
  * This function is performed by the gateway, which forwards a cmd data to a destination node
  */
 
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void gateway_forward_cmd_data(CMD_DATA* cmd){
 
 	send_data(NULL, cmd->next_ip, cmd->port_num, NULL, cmd, CMD_INFO);
@@ -2001,56 +1422,19 @@ void gateway_forward_cmd_data(CMD_DATA* cmd){
 }
 
 
-<<<<<<< HEAD
 /*
  * read a logged data chunk from a log file
  */
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void read_log_data(int local_chunk_id, char* log_data, char* filename){
 
     int i;
     int bucket_id;
     int log_order;
 	int ret;
-<<<<<<< HEAD
 	
     //locate the log_order
     bucket_id=local_chunk_id%bucket_num;
 
-=======
-
-	//determine the log_order
-
-/*
-    //printf("num_updt_strps=%d\n", num_updt_strps);
-	//printf("newest_chunk_log_data:\n");
-    for(i=0; i<entry_per_bucket; i++){
-
-        for(j=0; j<bucket_num; j++)
-            printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2]);
-
-        printf("\n");
-    }
-
-	printf("newest_chunk_log_order:\n");
-    for(i=0; i<entry_per_bucket; i++){
-
-        for(j=0; j<bucket_num; j++)
-            printf("%d ", newest_chunk_log_order[j*entry_per_bucket*2+i*2+1]);
-
-        printf("\n");
-    }
-*/
-
-    //read the old data from data file and new data from log file
-    //locate the log_order
-    bucket_id=local_chunk_id%bucket_num;
-
-	//printf("bucket_id=%d, local_chunk_id=%d\n", bucket_id, local_chunk_id);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     for(i=0; i<entry_per_bucket; i++){
 
         if(newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i]==local_chunk_id){
@@ -2066,7 +1450,6 @@ void read_log_data(int local_chunk_id, char* log_data, char* filename){
 
 		}
 
-<<<<<<< HEAD
     // read the newest data from the log_file based on the log_order
     char* tmp_buff=NULL;
 	ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
@@ -2078,16 +1461,6 @@ void read_log_data(int local_chunk_id, char* log_data, char* filename){
     int fd=open(filename, O_RDONLY);
     lseek(fd, log_order*chunk_size, SEEK_SET);
 	
-=======
-    //read the newest data from the log_file
-    char* tmp_buff=NULL;
-	ret=posix_memalign((void **)&tmp_buff, getpagesize(), chunk_size);
-	if(ret)
-		printf("ERROR: posix_memalign: %s\n", strerror(ret));
-
-    int fd=open(filename, O_RDONLY);
-    lseek(fd, log_order*chunk_size, SEEK_SET);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     ret=read(fd, tmp_buff, chunk_size);
 	if(ret<chunk_size){
 
@@ -2105,12 +1478,9 @@ void read_log_data(int local_chunk_id, char* log_data, char* filename){
 }
 
 
-<<<<<<< HEAD
 /*
  * eivct a data chunk out of a log file
  */
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void evict_log_dt(int* log_table, int logcal_data_id){
 
 	int i; 
@@ -2132,13 +1502,9 @@ void evict_log_dt(int* log_table, int logcal_data_id){
 
 }
 
-<<<<<<< HEAD
 /*
  * This function is performed by the client to receive the metadata from the metadata server
  */ 
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void recv_metadata(META_INFO* metadata, int port_num){
 
     int server_socket;
@@ -2149,11 +1515,7 @@ void recv_metadata(META_INFO* metadata, int port_num){
 	
 	server_socket=init_server_socket(port_num);
 
-<<<<<<< HEAD
     // init the sender info
-=======
-    //init the sender info
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     struct sockaddr_in sender_addr;
     socklen_t length=sizeof(sender_addr);
 
@@ -2166,15 +1528,8 @@ void recv_metadata(META_INFO* metadata, int port_num){
 
 		connfd=accept(server_socket, (struct sockaddr*)&sender_addr, &length);
 		if(connfd<0){
-<<<<<<< HEAD
 			perror("recv_metadata fails\n");
 			exit(1);
-=======
-
-			perror("recv_metadata fails\n");
-			exit(1);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 			}
 
 		recv_len=0;
@@ -2186,27 +1541,16 @@ void recv_metadata(META_INFO* metadata, int port_num){
 
 			}
 
-<<<<<<< HEAD
 		// copy the data in buff 
 		memcpy(metadata, recv_buff, sizeof(META_INFO));
 
 		// close the connection 
-=======
-		//copy the data in buff 
-		memcpy(metadata, recv_buff, sizeof(META_INFO));
-
-		//close the connection 
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		close(connfd);
 
 		break;
 		
 		}
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	free(recv_buff);
 	close(server_socket);
 
@@ -2214,13 +1558,9 @@ void recv_metadata(META_INFO* metadata, int port_num){
 
 
 
-<<<<<<< HEAD
 /* 
  * this function is executed by the client to connect the metadata server for data update
  */
-=======
-/* this function is executed by the client to connect the metadata server for data update */
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void connect_metaserv(int chunk_id, META_INFO* metadata){
 
    UPDT_REQ_DATA* req=(UPDT_REQ_DATA*)malloc(sizeof(UPDT_REQ_DATA));
@@ -2228,17 +1568,10 @@ void connect_metaserv(int chunk_id, META_INFO* metadata){
    req->op_type=UPDT_REQ;
    req->local_chunk_id=chunk_id;
 
-<<<<<<< HEAD
    // send the req to metadata server
    send_req(req, mt_svr_ip, UPDT_PORT, NULL, REQ_INFO);
 
    // recv the metadata information
-=======
-   //send the req to metadata server
-   send_req(req, mt_svr_ip, UPDT_PORT, NULL, REQ_INFO);
-
-   //recv the metadata information
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    recv_metadata(metadata, UPDT_PORT);
 
    free(req);

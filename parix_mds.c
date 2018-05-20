@@ -33,7 +33,6 @@ void* parix_send_cmd_process(void* ptr){
 
 	send_data(NULL, pcd.sent_ip, pcd.port_num, NULL, (CMD_DATA*)ptr, CMD_INFO);
 
-<<<<<<< HEAD
 	return NULL;
 
 }
@@ -43,52 +42,29 @@ void* parix_send_cmd_process(void* ptr){
 */
 void parix_commit(int num_rcrd_strp){
   
-=======
-}
-
-void parix_commit(int num_rcrd_strp){
-  
-  //print_array(num_rcrd_strp , data_chunks+1 , mark_updt_stripes_tab);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
   int i,j; 
   int prty_node_id;
   int global_chunk_id;
   int prty_id;
   int sum_ack;
 
-<<<<<<< HEAD
   // initiate the cmd structure to notify the m parity nodes for delta commit 
-=======
-  //ack the cmd 
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
   CMD_DATA* pcd_prty=(CMD_DATA*)malloc(sizeof(CMD_DATA)*(num_chunks_in_stripe-data_chunks));
 
   pthread_t send_cmd_thread[num_chunks_in_stripe-data_chunks];
   memset(send_cmd_thread, 0, sizeof(send_cmd_thread));
 
-<<<<<<< HEAD
   // parix performs the delta commit stripe by stripe
-=======
-  //in parix, we let the parity server absorb the data updates stripe by stripe
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
   for(i=0; i<num_rcrd_strp; i++){
 
 	memset(commit_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
 
 	for(prty_id=0; prty_id<num_chunks_in_stripe-data_chunks; prty_id++){
 
-<<<<<<< HEAD
         // init the updated data chunks
 		memset(pcd_prty[prty_id].parix_updt_data_id, -1, sizeof(int)*data_chunks);
 
 		// record the updated data chunks in each updated stripe 
-=======
-        //init the updated data chunks
-		memset(pcd_prty[prty_id].parix_updt_data_id, -1, sizeof(int)*data_chunks);
-		
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		for(j=0; j<data_chunks; j++){
 
 			if(mark_updt_stripes_tab[i*(data_chunks+1)+j+1]>=0)
@@ -96,11 +72,7 @@ void parix_commit(int num_rcrd_strp){
 
 			}
 
-<<<<<<< HEAD
 		// notify all the parity chunks to absorb the updates
-=======
-		//else notify all the parity chunks to absorb the updates
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		pcd_prty[prty_id].send_size=sizeof(CMD_DATA);
 		pcd_prty[prty_id].op_type=PARIX_CMMT;
 		pcd_prty[prty_id].stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
@@ -125,7 +97,6 @@ void parix_commit(int num_rcrd_strp){
 
 		}
 
-<<<<<<< HEAD
     // send the commit cmd to m corresponding parity nodes in each stripe 
     for(prty_id=0; prty_id<num_chunks_in_stripe-data_chunks; prty_id++)
 		pthread_create(&send_cmd_thread[prty_id], NULL, parix_send_cmd_process, pcd_prty+prty_id);
@@ -138,18 +109,6 @@ void parix_commit(int num_rcrd_strp){
 	para_recv_ack(mark_updt_stripes_tab[i*(data_chunks+1)], num_chunks_in_stripe-data_chunks, CMMT_PORT);
 
     // check if all the m acks are collected
-=======
-    for(prty_id=0; prty_id<num_chunks_in_stripe-data_chunks; prty_id++)
-		pthread_create(&send_cmd_thread[prty_id], NULL, parix_send_cmd_process, pcd_prty+prty_id);
-	
-	//join the threads
-	for(prty_id=0; prty_id<num_chunks_in_stripe-data_chunks; prty_id++)
-		pthread_join(send_cmd_thread[prty_id], NULL);
-
-	//parallel listen ack
-	para_recv_ack(mark_updt_stripes_tab[i*(data_chunks+1)], num_chunks_in_stripe-data_chunks, CMMT_PORT);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	sum_ack=sum_array(num_chunks_in_stripe-data_chunks, commit_count);
 
     if(sum_ack!=(num_chunks_in_stripe-data_chunks)){
@@ -161,17 +120,11 @@ void parix_commit(int num_rcrd_strp){
 
   free(pcd_prty);
 
-<<<<<<< HEAD
 }
 
 /*
  * This function processes the update request received from the parix client
 */
-=======
-
-}
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
 
    int local_chunk_id;
@@ -181,49 +134,27 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
    int stripe_id;
    int chunk_id_in_stripe;
 
-<<<<<<< HEAD
    // if the number of stripes that the updated data chunks span is more than max_updt_strps, then invoke commit 
    if(num_rcrd_strp>=max_updt_strps){
    
-=======
-   //if the updated stripes are more than max_updt_strps, then invoke commit 
-   if(num_rcrd_strp>=max_updt_strps){
-   
-	   printf("max_updt_strps+num_tlrt_strp=%d, num_rcrd_strp=%d\n", max_updt_strps+num_tlrt_strp, num_rcrd_strp);
-   
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	   if(num_rcrd_strp>max_updt_strps+num_tlrt_strp){
 		   printf("ERR: num_rcrd_strp is too large!\n");
 		   exit(1);
 		   }
    
-<<<<<<< HEAD
-=======
-	   //printf("updt_stripes:\n");
-	   //print_array(num_rcrd_strp, data_chunks+1, mark_updt_stripes_tab);
-   
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	   parix_commit(num_rcrd_strp);
 	   memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
 	   num_rcrd_strp=0;
    
 	   }
 
-<<<<<<< HEAD
    // read the logical chunk id from the request
-=======
-   //read the data from req
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    local_chunk_id=req->local_chunk_id;
    stripe_id=local_chunk_id/data_chunks;
    chunk_id_in_stripe=local_chunk_id%data_chunks;
    
-<<<<<<< HEAD
    // check if the stripe has data chunks updated during the data logging
    // if not, then record the stripe
-=======
-   //check if the stripe is record
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    for(j=0; j<num_rcrd_strp; j++){
 	   if(mark_updt_stripes_tab[j*(data_chunks+1)]==stripe_id)
 		   break;
@@ -234,17 +165,10 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
 	   num_rcrd_strp++;
    }
    
-<<<<<<< HEAD
    // record the updated data chunks in the k-th stripe
    mark_updt_stripes_tab[j*(data_chunks+1)+chunk_id_in_stripe+1]++;
 
    // init a meta_info
-=======
-   //record the updated data chunks in the k-th stripe
-   mark_updt_stripes_tab[j*(data_chunks+1)+chunk_id_in_stripe+1]++;
-
-   //init a meta_info
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
    metadata->data_chunk_id=local_chunk_id;
@@ -257,10 +181,7 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
    else 
    	metadata->if_first_update=0;
 
-<<<<<<< HEAD
    // locate each parity node and the storage index of the corresponding parity chunk
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
 
 	 global_chunk_id=stripe_id*num_chunks_in_stripe+data_chunks+j;
@@ -269,24 +190,15 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
 
    	}
 
-<<<<<<< HEAD
    // locate the storage node that keeps the data to be updated, and get its storage index
-=======
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    global_chunk_id=stripe_id*num_chunks_in_stripe+local_chunk_id%data_chunks;
    node_id=global_chunk_map[global_chunk_id];
    metadata->chunk_store_index=locate_store_index(node_id, global_chunk_id);
 
-<<<<<<< HEAD
    // fill the ip address of the data node
    memcpy(metadata->next_ip, node_ip_set[node_id], ip_len);
 
    // send the metadata back to the client
-=======
-   //fill the data node ip
-   memcpy(metadata->next_ip, node_ip_set[node_id], ip_len);
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    send_req(NULL, client_ip, metadata->port_num, metadata, METADATA_INFO);
 
    free(metadata);
@@ -296,7 +208,6 @@ void parix_md_process_req(UPDT_REQ_DATA* req, char* sender_ip){
 
 int main(int argc, char** argv){
 
-<<<<<<< HEAD
 	// it first reads the mapping infomation between chunks and nodes from a mapping file named "chunk_map"
     read_chunk_map("chunk_map");
 
@@ -308,16 +219,6 @@ int main(int argc, char** argv){
 	memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
 
 	// listen the request from clients 
-=======
-    read_chunk_map("chunk_map");
-	get_chunk_store_order();
-
-	//init num_rcrd_strp
-	num_rcrd_strp=0;
-	memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
-
-	//listen the request from clients 
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	int connfd;
 	int server_socket=init_server_socket(UPDT_PORT);
 
@@ -341,10 +242,6 @@ int main(int argc, char** argv){
 
 		printf("before accept:\n");
 		connfd=accept(server_socket, (struct sockaddr*)&sender_addr, &length);
-<<<<<<< HEAD
-=======
-		printf("connfd=%d\n", connfd);
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		
 		if(connfd<0){
 
@@ -354,16 +251,10 @@ int main(int argc, char** argv){
 			}
 
 		sender_ip=inet_ntoa(sender_addr.sin_addr); 
-<<<<<<< HEAD
 		recv_len=0;
 		read_size=0;
 
 		// receive the data from the socket and initialize a request structure
-=======
-
-		recv_len=0;
-		read_size=0;
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		while(recv_len < sizeof(UPDT_REQ_DATA)){
 
 			read_size=read(connfd, recv_buff+recv_len, sizeof(UPDT_REQ_DATA)-recv_len);
@@ -382,13 +273,5 @@ int main(int argc, char** argv){
 	free(req);
 
     return 0;
-<<<<<<< HEAD
 	
 }
-=======
-}
-
-
-
-
->>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
