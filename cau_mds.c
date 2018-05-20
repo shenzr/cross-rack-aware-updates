@@ -21,9 +21,13 @@
 
 int num_rcrd_strp;
 
+<<<<<<< HEAD
 /*
  * The function sorts the data access frequencies in descending order with the index 
  */ 
+=======
+/* sort the data access frequencies in descending order with the index */
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void quick_sort(int* data, int* index, int start_id, int end_id){
 
 	int left=start_id;
@@ -97,9 +101,13 @@ int find_none_zero_min_array_index(int* array, int num, int exception){
 }
 
 
+<<<<<<< HEAD
 /*
  * A thread to send a command to a node
  */ 
+=======
+/*  send a command to a node */
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void* send_cmd_process(void* ptr){
 
     CMD_DATA tcd = *(CMD_DATA *)ptr;
@@ -107,7 +115,11 @@ void* send_cmd_process(void* ptr){
     tcd.port_num=UPDT_PORT; 
 
 	// if the system is on a local cluster with a node served as gateway, then send the data to the gateway first 
+<<<<<<< HEAD
 	// otherwise, send the data to the destination node directly 
+=======
+	// otherwise, send the data to the destination directly 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(if_gateway_open==1) 
 	  send_data(NULL, gateway_ip, UPDT_PORT, NULL, (CMD_DATA*)ptr, CMD_INFO);
 
@@ -118,9 +130,13 @@ void* send_cmd_process(void* ptr){
 
 }
 
+<<<<<<< HEAD
 /*
  * send a data movement command in data grouping
  */ 
+=======
+/* send a data movement command in data grouping */
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void* send_mvm_data_process(void* ptr){
 
     TRANSMIT_DATA tcd = *(TRANSMIT_DATA *)ptr;
@@ -138,9 +154,13 @@ void* send_mvm_data_process(void* ptr){
 }
 
 
+<<<<<<< HEAD
 /*
  * It relocates the in_chunk_id (to be moved into a rack) with the out_chunk_id (to be moved out of a rack) in data grouping
  */ 
+=======
+/* it swaps the in_chunk_id with the out_chunk_id in data grouping */
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, int out_chnk_node_id){
 
 	int i;
@@ -151,7 +171,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 	//send cmd data for separation to the related two nodes 
 	CMD_DATA* mvmn_cmd_mt=(CMD_DATA*)malloc(sizeof(CMD_DATA)*2);
 
+<<<<<<< HEAD
     // for in-chunk 
+=======
+    //for in-chunk 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     mvmn_cmd_mt[0].send_size=sizeof(CMD_DATA);
 	mvmn_cmd_mt[0].op_type=CMD_MVMNT;
 	mvmn_cmd_mt[0].stripe_id=in_chunk_id/num_chunks_in_stripe;
@@ -162,7 +186,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 	mvmn_cmd_mt[0].chunk_store_index=locate_store_index(in_chnk_node_id, in_chunk_id);
 	memcpy(mvmn_cmd_mt[0].next_ip, node_ip_set[in_chnk_node_id], ip_len);
 
+<<<<<<< HEAD
     // for out-chunk 
+=======
+    //for out-chunk 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     mvmn_cmd_mt[1].send_size=sizeof(CMD_DATA);
 	mvmn_cmd_mt[1].op_type=CMD_MVMNT;
 	mvmn_cmd_mt[1].stripe_id=out_chunk_id/num_chunks_in_stripe;
@@ -173,7 +201,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 	mvmn_cmd_mt[1].chunk_store_index=locate_store_index(out_chnk_node_id, out_chunk_id);
 	memcpy(mvmn_cmd_mt[1].next_ip, node_ip_set[out_chnk_node_id], ip_len);
 
+<<<<<<< HEAD
 	// send the movement cmd
+=======
+	//send the movement cmd
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	pthread_t send_cmd_thread[2];
 	memset(send_cmd_thread, 0, sizeof(send_cmd_thread));
 
@@ -185,7 +217,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 
 	para_recv_data(mvmn_cmd_mt[0].stripe_id, 2, MVMT_PORT, 2);
 
+<<<<<<< HEAD
 	// send back the data to the two nodes
+=======
+	//send back the data to the two nodes
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	TRANSMIT_DATA* mvm_data=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA)*2);
 
 	mvm_data[0].send_size=sizeof(TRANSMIT_DATA);
@@ -231,7 +267,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 
 	printf("recv_mvm_ack success\n");
 
+<<<<<<< HEAD
 	// update chunk_map and chunk_store_order
+=======
+	//update chunk_map and chunk_store_order
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	temp=global_chunk_map[in_chunk_id];
 	global_chunk_map[in_chunk_id]=global_chunk_map[out_chunk_id];
 	global_chunk_map[out_chunk_id]=temp;
@@ -242,7 +282,11 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 	out_store_order=locate_store_index(out_chnk_node_id, out_chunk_id);
 	chunk_store_order[out_chnk_node_id*max_num_store_chunks+out_store_order]=in_chunk_id;
 
+<<<<<<< HEAD
 	// update the prty_log_table
+=======
+	//update the prty_log_table
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	if(cau_num_rplc>0){
 
 		//exchage their log parity 
@@ -265,10 +309,15 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 }
 
 
+<<<<<<< HEAD
 
 /*
  * we assume that the data grouping is performed for each delta commit 
  */
+=======
+//this function is to sort the data chunks in a stripe, based on their access frequencies
+//we assume that the data are separated for each commit 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void data_grouping(int num_rcrd_strp){
 
   printf("\ndatagrouping starts:\n");
@@ -320,7 +369,11 @@ void data_grouping(int num_rcrd_strp){
 	memset(rcd_rack_id, 0, sizeof(int)*rack_num);
 	memset(rack_prty_num, 0, sizeof(int)*rack_num);
 
+<<<<<<< HEAD
 	// find where the rack that has most updated chunks 
+=======
+	//find where the rack that has most updated chunks 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	for(j=0; j<data_chunks; j++){
 
         //we only consider the chunks that are accessed
@@ -335,7 +388,11 @@ void data_grouping(int num_rcrd_strp){
 
 		}	
 
+<<<<<<< HEAD
 	// record the number of parity chunks in racks
+=======
+	//record the number of parity chunks in racks
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	for(l=0; l<num_chunks_in_stripe-data_chunks; l++){
 	
 		stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
@@ -352,7 +409,11 @@ void data_grouping(int num_rcrd_strp){
 	int min_cmmt_cost=999999;
 	final_cddt_rack_id=-1;
 
+<<<<<<< HEAD
 	// perform separation for the racks with max and min number of update chunks 
+=======
+	//perform separation for the racks with max and min number of update chunks 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	for(cddt_rack_id=0; cddt_rack_id<rack_num; cddt_rack_id++){
 
         // we prefer the two racks that can group all their stored hot data chunks within a rack
@@ -412,6 +473,7 @@ void data_grouping(int num_rcrd_strp){
 		
 	 }
 
+<<<<<<< HEAD
 	// select a cold chunk from this rack and perform switch
 	for(j=0; j<data_chunks; j++){
 
@@ -446,16 +508,58 @@ void data_grouping(int num_rcrd_strp){
 			}
 		}
 	}
+=======
+		//select a cold chunk from this rack and perform switch
+		for(j=0; j<data_chunks; j++){
+
+			if(temp_dt_updt_freq_stripe[j]==-1)
+				break;
+
+			its_rack_id=get_rack_id(global_chunk_map[mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[j]]);
+
+			if(its_rack_id!=final_cddt_rack_id)
+				continue;
+			
+			for(h=0; h<data_chunks; h++){
+
+            	//we only move the chunks that are not updated 
+				if(temp_dt_updt_freq_stripe[h]==1) 
+					continue;
+
+				//printf("temp_index[k]=%d\n",temp_index[k]);
+				temp_rack_id=get_rack_id(global_chunk_map[mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[h]]);
+
+				if(temp_rack_id==slct_rack){
+
+					in_chunk_id=mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[j];
+					out_chunk_id=mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[h];
+
+					out_chnk_nd_id=global_chunk_map[out_chunk_id];
+					in_chnk_nd_id=global_chunk_map[in_chunk_id];
+					
+					two_chunk_switch(in_chunk_id, in_chnk_nd_id, out_chunk_id, out_chnk_nd_id);
+
+					break;
+				}
+			  }
+		   }
+  	}
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
 }
 
 
 /* This function establishes the map of a data chunk to a parity node. 
+<<<<<<< HEAD
  * This parity node is used for interim replica of the data node, so as to 
+=======
+ * This parity node is used for log a replica of the data chunk, so as to 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
  * promise any single node/rack failure
  */
 void cau_estbh_log_map(){
 
+<<<<<<< HEAD
 	int i,j; 
 	int k;
 	int its_node_id;
@@ -467,11 +571,58 @@ void cau_estbh_log_map(){
 	memset(prty_log_map, -1, sizeof(int)*stripe_num*data_chunks);
 
 	for(i=0; i<stripe_num; i++){
+=======
+	//printf("enter cau_estbh_log_map:\n");
+
+	int i,j; 
+	int k,h;
+
+	int its_node_id;
+	int prty_nd_id;
+	int its_rack_id;
+
+	int prty_rack_id;
+
+
+    int expect_rack_id;
+
+	// it records the bandwidth among regions in amazon experiments
+	// we select the parity node in the region with the maximum bandwidth 
+	// for the rack stores updated data
+/*	
+	int map_priority[rack_num][rack_num]; 
+
+	map_priority[0][0]=0;
+	map_priority[0][1]=1;
+	map_priority[0][2]=3;
+	map_priority[0][3]=2;
+
+	map_priority[1][0]=0;
+	map_priority[1][1]=1;
+	map_priority[1][2]=2;
+	map_priority[1][3]=3;
+
+	map_priority[2][0]=0;
+	map_priority[2][1]=1;
+	map_priority[2][2]=2;
+	map_priority[2][3]=3;
+
+	map_priority[3][0]=0;
+	map_priority[3][1]=2;
+	map_priority[3][2]=1;
+	map_priority[3][3]=3;
+*/
+	memset(prty_log_map, -1, sizeof(int)*stripe_num*data_chunks);
+
+	for(i=0; i<stripe_num; i++){
+
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		for(k=0; k<data_chunks; k++){
 
 			its_node_id=global_chunk_map[i*num_chunks_in_stripe+k];
 			its_rack_id=get_rack_id(its_node_id);
 
+<<<<<<< HEAD
 			for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
 
 				prty_nd_id=global_chunk_map[i*num_chunks_in_stripe+data_chunks+j];
@@ -488,6 +639,38 @@ void cau_estbh_log_map(){
 		}
 
 	// write the mapping info into a file 
+=======
+			//scan the parity chunks 
+			//for(h=0; h<rack_num; h++){
+
+				//expect_rack_id=map_priority[its_rack_id][h];
+
+				//if(expect_rack_id==its_rack_id)
+					//continue;
+
+				for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
+
+					prty_nd_id=global_chunk_map[i*num_chunks_in_stripe+data_chunks+j];
+					prty_rack_id=get_rack_id(prty_nd_id);
+
+					if(prty_rack_id!=its_rack_id){
+
+						prty_log_map[i*data_chunks+k]=data_chunks+j;
+						break;
+
+						}
+					}
+
+				//if(prty_rack_id==expect_rack_id)
+				//break;
+
+				//}
+			}
+		}
+
+
+	//write the mapping info into a file 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	FILE *fd; 
 	char* filename="parity_log_map";
 	
@@ -508,9 +691,13 @@ void cau_estbh_log_map(){
 
 }
 
+<<<<<<< HEAD
 /*
  * This function seeks the node of the first parity chunk in the given rack and stripe
  */ 
+=======
+/* this function seeks the node of the first parity chunk in the given rack and stripe */
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 int get_first_prty_nd_id(int prty_rack_id, int stripe_id){
 
   int i;
@@ -533,7 +720,11 @@ int get_first_prty_nd_id(int prty_rack_id, int stripe_id){
 
 }
 
+<<<<<<< HEAD
 /* This is a function for delta commit. In this function, the metadata server will decide 
+=======
+/* this is a function for delta commit. In this function, the metadata server will decide 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
  * the roles of each involved node (including the parity nodes, and the data nodes that has 
  * data chunks updated)
  */
@@ -567,7 +758,11 @@ void cau_commit(int num_rcrd_strp){
    // record the internal nodes in each rack
    int* intnl_nds=(int*)malloc(sizeof(int)*rack_num); 
 
+<<<<<<< HEAD
    // record the number of updated data chunks in each rack
+=======
+   // it records the number of updated data chunks in each rack
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    int* updt_chnk_num_racks=(int*)malloc(sizeof(int)*rack_num); 
 
    pthread_t send_cmd_dt_thread[data_chunks];
@@ -575,14 +770,22 @@ void cau_commit(int num_rcrd_strp){
   
    int rack_has_prty[rack_num]; 
    
+<<<<<<< HEAD
    // performs delta commit for each updated stripe (i.e., the stripe has data chunks updated)
+=======
+   // performs delta commit for each updated stripe 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    for(i=0; i<num_rcrd_strp; i++){
 	 
 	 updt_stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
 
 	 memset(rack_has_prty, 0, sizeof(int)*rack_num);
 
+<<<<<<< HEAD
 	 // determine the value of prty_rack_num
+=======
+	 //determine the value of prty_rack_num
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	 for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
 
 		global_chunk_id=updt_stripe_id*num_chunks_in_stripe+data_chunks+j;
@@ -604,10 +807,17 @@ void cau_commit(int num_rcrd_strp){
 	  // it records the num of parity chunks in each parity rack
 	  int* prty_num_in_racks=(int*)malloc(sizeof(int)*prty_rack_num); 
 
+<<<<<<< HEAD
 	  // it records the number of deltas received by the parity node in each rack
 	  int* recv_delta_num=(int*)malloc(sizeof(int)*prty_rack_num); 
 
 	  // it records the first parity node in a parity rack 
+=======
+	  //it records the number of deltas received by the parity chunk in a rack
+	  int* recv_delta_num=(int*)malloc(sizeof(int)*prty_rack_num); 
+
+	  //it records the first parity node in a rack that has parity nodes 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	  int* first_prty_node_array=(int*)malloc(sizeof(int)*prty_rack_num);
 	  
 	  // it records the commit approach from rack-i to rack-j
@@ -635,7 +845,11 @@ void cau_commit(int num_rcrd_strp){
 			}
 	  	}
 
+<<<<<<< HEAD
 	  // determine the node (called internal node) with the first updated data chunk the rack 
+=======
+	  // determine the node with the first updated data chunk the rack 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	  // this node will perform parity-delta chunk aggregation in the parity-delta commit approach
 	  memset(intnl_nds, -1, sizeof(int)*rack_num);
 	  
@@ -653,13 +867,21 @@ void cau_commit(int num_rcrd_strp){
 		
 	  	}
 
+<<<<<<< HEAD
 	  // record the node that stores the first parity chunk in the given rack and stripe
+=======
+	  // store the node that stores the first parity chunk in the given rack and stripe
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	  // this node will be in charge of receiving data delta chunks in delta-commit approach and 
 	  // forwarding the copies of the data delta chunks to other parity nodes within the same rack
 	  for(j=0; j<prty_rack_num; j++)
 	  	first_prty_node_array[j]=get_first_prty_nd_id(prty_rack_array[j], updt_stripe_id);
 	  
+<<<<<<< HEAD
 	  // scan each updated chunk and record the number of updated chunks in each rack
+=======
+	  //scan each updated chunk and record the number of updated chunks in each rack
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
       for(k=0; k<data_chunks; k++){
 
 		  if(mark_updt_stripes_tab[i*(data_chunks+1)+k+1]==-1)
@@ -682,7 +904,11 @@ void cau_commit(int num_rcrd_strp){
 			if(updt_chnk_num_racks[k]==0)
 				continue;
 
+<<<<<<< HEAD
             // choose the data-delta commit if the number of updated data chunks in rack-i is smaller than that of parity chunks in rack-j (where i!=j)
+=======
+            //we choose data-delta commit in the following case 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 			if((updt_chnk_num_racks[k] < prty_num_in_racks[j]) && (k!=prty_rack_id)){
 				
 				recv_delta_num[j] += updt_chnk_num_racks[k];
@@ -690,17 +916,28 @@ void cau_commit(int num_rcrd_strp){
 				
 				}
 
+<<<<<<< HEAD
             // choose the parity-delta commit if the number of updated data chunk in rack-i is no less than that of parity chunks in rack-j (where i!=j)
 			else if((updt_chnk_num_racks[k] >= prty_num_in_racks[j]) && (k!=prty_rack_id)){
 
 				// one parity node in rack-j will receive only one parity delta from rack-i in parity-delta commit approach
+=======
+            //we choose parity-delta commit in the following case
+			else if((updt_chnk_num_racks[k] >= prty_num_in_racks[j]) && (k!=prty_rack_id)){
+				
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 				recv_delta_num[j] ++; 
 				commit_approach[k*prty_rack_num+prty_rack_id]=PARITY_DELTA_APPR;
 				
 				}
 
+<<<<<<< HEAD
             // if the updated data chunks are resided in the same rack with some parity nodes 
             // then we direct send the data delta chunks to those parity chunks
+=======
+            //if the updated data chunks are resided in the same rack with some parity chunks 
+            //then we direct send the data delta chunks to those parity chunks
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 			else if(k==prty_rack_id){
 				recv_delta_num[j]+=updt_chnk_num_racks[k];
 				commit_approach[k*prty_rack_num+prty_rack_id]=DIRECT_APPR; 
@@ -709,12 +946,20 @@ void cau_commit(int num_rcrd_strp){
 			}
 		}
 
+<<<<<<< HEAD
 	  // inform the parity nodes first to let them be ready for commit
+=======
+	  //inform the parity nodes first
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	  memset(send_cmd_prty_thread, 0, sizeof(send_cmd_prty_thread));
 	  
 	  for(j=0; j<num_chunks_in_stripe-data_chunks; j++){
 
+<<<<<<< HEAD
         // initialize structure
+=======
+        //init structure
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
         tcd_prty[j].send_size=sizeof(CMD_DATA);
 		tcd_prty[j].op_type=DATA_COMMIT;
 		tcd_prty[j].prty_delta_app_role=PARITY;
@@ -731,11 +976,19 @@ void cau_commit(int num_rcrd_strp){
 		prty_node_id=global_chunk_map[global_chunk_id];
 		prty_rack_id=get_rack_id(prty_node_id);
 
+<<<<<<< HEAD
         // for the nodes, it can read its ip from sent_ip
 		memcpy(tcd_prty[j].sent_ip, node_ip_set[prty_node_id], ip_len);
 		memcpy(tcd_prty[j].next_ip, tcd_prty[j].sent_ip, ip_len);
 
         // establish the num of deltas received by the parity nodes
+=======
+        //for the nodes, it can read its ip from sent_ip
+		memcpy(tcd_prty[j].sent_ip, node_ip_set[prty_node_id], ip_len);
+		memcpy(tcd_prty[j].next_ip, tcd_prty[j].sent_ip, ip_len);
+
+        //establish the num of deltas received by the parity chunk
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		for(k=0; k<prty_rack_num; k++)
 			if(prty_rack_id==prty_rack_array[k])
 				break;
@@ -744,8 +997,13 @@ void cau_commit(int num_rcrd_strp){
 		tcd_prty[j].num_recv_chks_prt=delta_num; 
 		tcd_prty[j].chunk_store_index=locate_store_index(prty_node_id, global_chunk_id);
 
+<<<<<<< HEAD
 		// decide which parity node should be served as the internal for delta forwarding
 		// CAU sets the first parity node in each rack to act as the internal node
+=======
+		//decide which parity chunk should be served as the internal for delta forwarding
+		//CAU sets the first parity chunk in each rack to act as the internal node
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		if(prty_node_id==first_prty_node_array[k])
 			tcd_prty[j].data_delta_app_prty_role=PRTY_INTERNAL;
 			
@@ -754,8 +1012,15 @@ void cau_commit(int num_rcrd_strp){
 
 	  	}
 
+<<<<<<< HEAD
 	  // for each data node, we should define their update approaches and roles when committing the deltas to different parity nodes 
 	  count=0;
+=======
+	  // then for each update data chunk, we should define their update approaches 
+	  // and roles in committing for different parity chunks 
+	  count=0;
+	  
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	  for(j=0; j<data_chunks; j++){
 
 		if(mark_updt_stripes_tab[i*(data_chunks+1)+j+1]==-1)
@@ -768,13 +1033,21 @@ void cau_commit(int num_rcrd_strp){
 
 		// get the number of update chunks in rack_id
 		updt_chunk_num=updt_chnk_num_racks[rack_id];
+<<<<<<< HEAD
+=======
+		//printf("rack_id=%d, updt_chunk_num=%d\n", rack_id, updt_chunk_num);
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 
 		if(updt_chunk_num==0){
 			printf("ERR: updt_chunk_num==0!\n");
 			exit(1);
 			}
 
+<<<<<<< HEAD
 		// initialize the common configurations
+=======
+		//init the common configurations
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		tcd_dt[j].send_size=sizeof(CMD_DATA);
 		tcd_dt[j].op_type=DATA_COMMIT;
 		tcd_dt[j].stripe_id=updt_stripe_id;
@@ -791,7 +1064,11 @@ void cau_commit(int num_rcrd_strp){
 		
 		memcpy(tcd_dt[j].next_ip, node_ip_set[node_id], ip_len);
 
+<<<<<<< HEAD
 		// compare updt_chunk_num to the number of parity nodes in parity rack to determine the commit approach
+=======
+		//compare updt_chunk_num to the number of parity chunks in parity rack to determine the commit approach
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 		for(k=0; k<num_chunks_in_stripe-data_chunks; k++){
 
 			global_chunk_id=updt_stripe_id*num_chunks_in_stripe+data_chunks+k;
@@ -805,6 +1082,7 @@ void cau_commit(int num_rcrd_strp){
 			prty_num=prty_num_in_racks[h];
 			tcd_dt[j].updt_prty_nd_id[k]=prty_node_id;
 
+<<<<<<< HEAD
             // initialize the configurations in parity-delta commit and data-delta commit in the k-th parity chunk's commit
             // we choose parity-delta commit 
 			if((updt_chunk_num >= prty_num) && (rack_id!=prty_rack_id)){
@@ -815,19 +1093,39 @@ void cau_commit(int num_rcrd_strp){
 				
 				// define the role of this data node in parity-delta commit approach
 				// if it is the first data node in this rack, then it is defined as an internal node 
+=======
+            //init the configurations in parity-delta commit and data-delta commit in the k-th parity chunk's commit
+            // we choose parity-delta commit 
+			if((updt_chunk_num >= prty_num) && (rack_id!=prty_rack_id)){
+
+				//printf("Parity-Delta_Approach: stripe_id=%d\n", updt_stripe_id);
+				
+				tcd_dt[j].commit_app[k]=PARITY_DELTA_APPR;
+				
+				//define the role of this data chunk in parity-delta-first approach
+				//if it is the first data chunk in this rack, then it is defined as an internal node 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 				if(intnl_nds[rack_id]==node_id){
 					
 					tcd_dt[j].prty_delta_app_role=DATA_INTERNAL;
 					memcpy(tcd_dt[j].next_dest[k], node_ip_set[prty_node_id], ip_len);
 
+<<<<<<< HEAD
 					// decide the number of data deltas received by the internal node 
+=======
+					//decide the number of data deltas received by the internal node 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 					tcd_dt[j].num_recv_chks_itn = updt_chunk_num-1; 
 					
 					}
 
+<<<<<<< HEAD
                 // else it should be a leaf node, which only sends delta to the internal node
 				else {
 					
+=======
+				else {
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 					tcd_dt[j].prty_delta_app_role=DATA_LEAF;
 					memcpy(tcd_dt[j].next_dest[k], node_ip_set[intnl_nds[rack_id]], ip_len);
 
@@ -839,13 +1137,21 @@ void cau_commit(int num_rcrd_strp){
 			else if ((updt_chunk_num < prty_num) && (rack_id!=prty_rack_id)) {
 
 				tcd_dt[j].commit_app[k]=DATA_DELTA_APPR;
+<<<<<<< HEAD
 				// the next ip addr is the internal node of parity nodes
+=======
+				//the next ip addr is the internal node of parity chunks
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 				prty_intl_nd=get_first_prty_nd_id(prty_rack_id, updt_stripe_id);
 				memcpy(tcd_dt[j].next_dest[k], node_ip_set[prty_intl_nd], ip_len);
 				
 				}
 
+<<<<<<< HEAD
             // for the data node stored with the parity nodes in the same rack, 
+=======
+            // for the data chunks stored with the parity chunks in the same rack, 
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
             // we directly send the data delta to the parity node
 			else if (rack_id==prty_rack_id){
 
@@ -857,7 +1163,11 @@ void cau_commit(int num_rcrd_strp){
 			}
 
 
+<<<<<<< HEAD
 		    // send the cmd to the data node
+=======
+		    //send the cmd to the data node
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 			pthread_create(&send_cmd_dt_thread[count], NULL, send_cmd_process, (void *)(tcd_dt+j));
 			count++;
 
@@ -898,9 +1208,12 @@ void cau_commit(int num_rcrd_strp){
 }
 
 
+<<<<<<< HEAD
 /*
  * This function describes the processing for the request from the client
  */
+=======
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 void cau_md_process_req(UPDT_REQ_DATA* req){
 
 	int local_chunk_id;
@@ -928,16 +1241,29 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
 			
         }
 
+<<<<<<< HEAD
 	// read the data from request
+=======
+	//read the data from req
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	local_chunk_id=req->local_chunk_id;
 	stripe_id=local_chunk_id/data_chunks;
 	chunk_id_in_stripe=local_chunk_id%data_chunks;
 
+<<<<<<< HEAD
 	// node info of that chunk 
 	global_chunk_id=stripe_id*num_chunks_in_stripe+local_chunk_id%data_chunks;
 	node_id=global_chunk_map[global_chunk_id];
 
 	// check if the stripe is recorded
+=======
+	//node info of that chunk 
+	global_chunk_id=stripe_id*num_chunks_in_stripe+local_chunk_id%data_chunks;
+	node_id=global_chunk_map[global_chunk_id];
+
+
+	//check if the stripe is recorded
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     for(j=0; j<num_rcrd_strp; j++){
 	   if(mark_updt_stripes_tab[j*(data_chunks+1)]==stripe_id)
 		   break;
@@ -948,21 +1274,36 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
 		num_rcrd_strp++;
 	}
 
+<<<<<<< HEAD
 	// record the updated data chunks in the k-th stripe
 	mark_updt_stripes_tab[j*(data_chunks+1)+chunk_id_in_stripe+1]++;
 
    // initialize the metadata info
+=======
+	//record the updated data chunks in the k-th stripe
+	mark_updt_stripes_tab[j*(data_chunks+1)+chunk_id_in_stripe+1]++;
+
+   //init the metadata info
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
    metadata->data_chunk_id=local_chunk_id%data_chunks;
    metadata->stripe_id=stripe_id;
    metadata->port_num=UPDT_PORT;
 
+<<<<<<< HEAD
    // fill the data node ip
    memcpy(metadata->next_ip, node_ip_set[node_id], ip_len);
 
    // fill the parity info
    // tell the data node where its corresponding parity chunk for data replication
+=======
+   //fill the data node ip
+   memcpy(metadata->next_ip, node_ip_set[node_id], ip_len);
+
+   // fill the parity info
+   // tell the data chunk where its corresponding parity chunk for data replication
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
    log_prty_id=prty_log_map[local_chunk_id];
 
    // select other cau_num_rplc-1 parity chunk for storing replications 
@@ -989,7 +1330,11 @@ void cau_md_process_req(UPDT_REQ_DATA* req){
    	   }
    	}
 
+<<<<<<< HEAD
 	// send the metadata back to the client
+=======
+	//send the metadata
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	send_req(NULL, client_ip, metadata->port_num, metadata, METADATA_INFO);
 
 	free(metadata);
@@ -1011,7 +1356,11 @@ int main(int argc, char** argv){
 	num_rcrd_strp=0;
 	memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
 
+<<<<<<< HEAD
 	// initialize socket
+=======
+	//init socket
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 	int connfd;
 	int server_socket=init_server_socket(UPDT_PORT);
 	int recv_len;
@@ -1020,7 +1369,11 @@ int main(int argc, char** argv){
 	char* recv_buff=(char*)malloc(sizeof(UPDT_REQ_DATA));
 	UPDT_REQ_DATA* req=(UPDT_REQ_DATA*)malloc(sizeof(UPDT_REQ_DATA));	
 
+<<<<<<< HEAD
     // initialize the sender info
+=======
+    //init the sender info
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
     struct sockaddr_in sender_addr;
     socklen_t length=sizeof(sender_addr);
 
@@ -1035,8 +1388,15 @@ int main(int argc, char** argv){
 		connfd=accept(server_socket, (struct sockaddr*)&sender_addr, &length);
 		
 		if(connfd<0){
+<<<<<<< HEAD
 			perror("connection fails\n");
 			exit(1);
+=======
+
+			perror("connection fails\n");
+			exit(1);
+
+>>>>>>> 03c92af8f9ce1f366a9a26c128f98adb9fcdf95a
 			}
 
 		recv_len=0;
