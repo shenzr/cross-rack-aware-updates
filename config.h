@@ -111,7 +111,7 @@
 
 typedef struct _transmit_data{
 
-    int send_size;
+	int send_size;
 	int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
 	int stripe_id; //it will be used in commit
 	int data_chunk_id;//new data or data_delta
@@ -130,7 +130,7 @@ typedef struct _transmit_data{
 	char sent_ip[ip_len]; //the ip addr to send the data 
 	char from_ip[ip_len]; //record the ip addr of the sender 
 	char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
-	                                                          //for example, the next_addr of the leaf node in parity delta approach should the internal node 
+	//for example, the next_addr of the leaf node in parity delta approach should the internal node 
 	char buff[chunk_size];
 }TRANSMIT_DATA;
 
@@ -151,7 +151,7 @@ typedef struct _aggt_send_data{
 
 typedef struct _ack_data{
 
-    int send_size;
+	int send_size;
 	int op_type;
 	int stripe_id;
 	int data_chunk_id;
@@ -163,8 +163,8 @@ typedef struct _ack_data{
 
 
 typedef struct _cmd_data{
-	
-    int send_size;
+
+	int send_size;
 	int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
 	int stripe_id; //it will be used in commit
 	int data_chunk_id;//new data or data_delta
@@ -183,7 +183,7 @@ typedef struct _cmd_data{
 	char sent_ip[ip_len]; //the ip addr to send the data 
 	char from_ip[ip_len]; //record the ip addr of the sender 
 	char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
-	                                                          //for example, the next_addr of the leaf node in parity delta approach should the internal node 
+	//for example, the next_addr of the leaf node in parity delta approach should the internal node 
 }CMD_DATA;
 
 
@@ -191,7 +191,7 @@ typedef struct _updt_req_data{
 
 	int op_type;
 	int local_chunk_id;
-	
+
 }UPDT_REQ_DATA;
 
 
@@ -212,14 +212,14 @@ typedef struct _meta_info{
 
 typedef struct _recv_process_data{//it is used in receive data by multiple threads
 
-    int connfd; 
+	int connfd; 
 	int recv_id;
 
 }RECV_PROCESS_DATA;
 
 typedef struct _recv_process_prty{//it is used in receive data by multiple threads
 
-    int connfd; 
+	int connfd; 
 	int recv_id;
 	int prty_delta_role;
 	int prty_nd_id;

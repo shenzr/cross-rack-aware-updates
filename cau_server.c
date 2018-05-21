@@ -66,7 +66,8 @@ void cau_read_cal_data_delta(int stripe_id, char* data_delta, int local_chunk_id
 
     // calculate the data delta chunk
 	read_log_data(local_chunk_id, log_data, "cau_log_file");
-    read_old_data(ori_data, store_index);
+
+    // calculate data delta
     bitwiseXor(data_delta, ori_data, log_data, chunk_size);
 
     // in-place write the new data chunk
@@ -727,6 +728,17 @@ int main(int argc, char** argv){
 
 	if_commit_start=0;
 	if_gateway_open=GTWY_OPEN;
+
+	// truncate the log file in case of it still has the log info in last evaluation
+	FILE* fd;
+	if((fd=fopen("cau_log_file", "r"))!=NULL){
+
+		ret=truncate("cau_log_file", 0);
+		if(ret!=0){
+			printf("truncate fails\n");
+			exit(1);
+			}
+		}
 
     // get local ip address
 	GetLocalIp(local_ip);
