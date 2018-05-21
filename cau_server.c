@@ -764,7 +764,6 @@ int main(int argc, char** argv){
 
     while(1){
 
-		printf("before accept:\n");
         connfd = accept(server_socket, (struct sockaddr*)&sender_addr, &length);
 
 		memcpy(sender_ip, inet_ntoa(sender_addr.sin_addr), ip_len);

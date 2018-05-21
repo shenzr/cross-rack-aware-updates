@@ -1,13 +1,10 @@
 #!/bin/bash
 
-node_name={"13.125.219.94" "13.125.213.113" "13.125.241.211" "13.125.205.78" "13.125.221.99" 
-"13.250.2.168" "54.255.236.120" "13.250.109.234" "54.169.201.194" "54.255.207.255" 
-"13.211.138.59" "54.252.226.100" "13.211.234.168" "54.252.191.111" "13.211.95.45" 
-"54.168.99.38" "13.231.125.11" "13.231.255.124" "13.231.109.236" "13.113.190.179"}
-
-user="ubuntu"
+node_name=("testbed-node52" "testbed-node51" "testbed-node42" "testbed-node43" "testbed-node44" "testbed-node45" "testbed-node46" "testbed-node47"  "testbed-node49" "testbed-node50")
+user="ncsgroup"
+remote_cmd="make"
 
 for name in ${node_name[*]}
 do 
-    scp * $user@$name:/home/ubuntu
+    scp /home/ncsgroup/zrshen/cross-rack-aware-update-github/* $user@$name:/home/ncsgroup/zrshen/cross-rack-aware-update-github
 done

@@ -4,17 +4,18 @@
 #define GTWY_OPEN             0
 
 /* erasure coding settings */
-#define data_chunks           12
-#define num_chunks_in_stripe  16 //n in erasure coding
-#define chunk_size            3*sizeof(long) // suppose the chunk size is 16MB
-#define total_nodes_num       20 //we set the number of chunks as the number of nodes in the local-cluster evaluation
-#define max_chunks_per_rack   4
-#define rack_num              4
-#define node_num_per_rack	  total_nodes_num/rack_num
+#define data_chunks           6
+#define num_chunks_in_stripe  9 //n in erasure coding
+#define chunk_size            1024*1024 // suppose the chunk size is 16MB
+
+/* configurations of data centers */
+#define total_nodes_num       9 //we set the number of chunks as the number of nodes in the local-cluster evaluation
+#define max_chunks_per_rack   3
+#define rack_num              3
+#define node_num_per_rack	  total_nodes_num/rack_num //we currently assume that each rack is composed of a constant number of nodes
 
 /* varied configuration in evaluation*/
 #define max_updt_strps        100 //it defines the maximum stripes to be updated before invoking delta commit
-
 
 /*log table*/
 #define max_log_chunk_cnt     1000

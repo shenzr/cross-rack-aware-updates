@@ -23,27 +23,23 @@
 #include "config.h"
 
 /* it records the public ip address of amazon vms*/
-char* node_ip_set[total_nodes_num]={"13.125.237.65", "13.125.237.16", "13.209.3.43", "13.125.234.148", "13.125.252.243", //seoul nodes
-									"54.169.215.182", "13.250.30.81", "54.254.200.139", "54.169.253.138", "13.229.215.19", //sgp nodes
-									"13.211.92.92", "54.206.12.247", "13.210.59.174", "54.252.161.166", "52.63.192.168", //sydney nodes
-									"54.250.246.253", "13.114.248.187", "13.230.239.222", "13.231.84.103", "54.249.114.24"}; //tokyo
+char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.10.55",
+									"192.168.10.56", "192.168.10.57", "192.168.10.59",
+									"192.168.10.60", "192.168.10.61", "192.168.10.62"}; 
 
 /* it records the inner ip address of amazon vms read from eth0 */
-char* inner_ip_set[total_nodes_num]={"172.31.25.191", "172.31.20.73", "172.31.21.113", "172.31.17.16", "172.31.22.187", //seoul region
-									 "172.31.6.250 ", "172.31.12.190", "172.31.2.43", "172.31.0.62", "172.31.8.102", //sgp region
-									 "172.31.10.41", "172.31.4.5", "172.31.3.205", "172.31.8.171", "172.31.1.151", //sydney region
-									 "172.31.27.175", "172.31.29.63", "172.31.30.174", "172.31.16.112", "172.31.26.40"}; //tokyo region
+char* inner_ip_set[total_nodes_num]={"192.168.0.53", "192.168.0.54", "192.168.0.55", 
+									 "192.168.0.56", "192.168.0.57", "192.168.0.59", 
+									 "192.168.0.60", "192.168.0.61", "192.168.0.62"}; 
 
-char* mt_svr_ip="13.229.209.179";
-char* client_ip="13.250.46.9";
+char* mt_svr_ip="192.168.10.52";
+char* client_ip="192.168.10.51";
 char* gateway_ip="13.229.232.195";
 
 /* we currently consider all the regions have the same number of nodes */
-int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack, node_num_per_rack};
+int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack};
 
-/* the four regions in our test */
-char* region_name[rack_num]={"Seoul", "Singapore", "Sydney", "Tokyo"};
-
+char* region_name[rack_num]={"Rack 0", "Rack 1", "Rack 2"};
 
 /*
  * a hash function to check the integrity of received data
@@ -253,7 +249,7 @@ void GetLocalIp(char* local_ip)
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ);
+    strncpy(ifr.ifr_name, "enp0s31f6", IFNAMSIZ);
     ifr.ifr_name[IFNAMSIZ-1]=0;
 
     if(ioctl(sock, SIOCGIFADDR, &ifr)<0)
