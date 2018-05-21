@@ -317,24 +317,13 @@ int main(int argc, char** argv){
 
     while(1){
 
-		printf("before connect:\n");
         connfd = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
-
 		if(connfd<0){
 			perror("Accpet fails!\n");
 			exit(1);
 			}
 
 		sender_ip=inet_ntoa(sender_addr.sin_addr);
-
-        // print the sender info
-		printf("receive connection from: ");
-		if(strcmp(sender_ip, mt_svr_ip)==0)
-			printf("MetaData Server\n");
-		else if(strcmp(sender_ip, client_ip)==0)
-			printf("Client \n");
-		else
-			print_amazon_vm_info(sender_ip);
 
         recv_len=0;
 		send_size=-1;

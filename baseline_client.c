@@ -18,8 +18,6 @@
 #include "common.h"
 #include "config.h"
 
-int cross_rack_updt_traffic; 
-
 /*
  * This function performs update using baseline delta-update approach
 */
@@ -56,7 +54,6 @@ void baseline_update(META_INFO* md){
    // print the info of destined storage server 
    node_id=get_node_id(td->next_ip);
    recv_rack_id=get_rack_id(node_id);
-   printf("Send new data to Region-%s, Node-%d\n", region_name[recv_rack_id], node_id%base);
 
    // send the data to the storage server
    if(if_gateway_open==1)
@@ -75,7 +72,6 @@ void baseline_update(META_INFO* md){
    free(recv_buff);
    
 }
-
 
 
 /* 
@@ -117,18 +113,8 @@ void baseline_read_trace(char *trace_name){
     offset_int=&a;
     size_int=&b;
 
-	struct timeval time1_bg, time1_ed;
-	struct timeval bg_tm, ed_tm;
-	gettimeofday(&bg_tm, NULL);
-
-	cross_rack_updt_traffic=0;
-
-	double update_time=0;
-
 	// read every operation from the trace
     while(fgets(operation, sizeof(operation), fp)) {
-
-		gettimeofday(&time1_bg, NULL);
 
         // partition the operation
         new_strtok(operation,divider,time_stamp);
@@ -155,17 +141,10 @@ void baseline_read_trace(char *trace_name){
 			baseline_update(metadata);
         }
 
-		gettimeofday(&time1_ed, NULL);
-		
-		update_time+=time1_ed.tv_sec-time1_bg.tv_sec+(time1_ed.tv_usec-time1_bg.tv_usec)*1.0/1000000;
-
     }
 
     fclose(fp);
 	free(metadata);
-
-	gettimeofday(&ed_tm, NULL);
-	printf("%s BASELINE: cross_rack_updt_traffic=%d, time=%lf\n", trace_name, cross_rack_updt_traffic, ed_tm.tv_sec-bg_tm.tv_sec+(ed_tm.tv_usec-bg_tm.tv_usec)*1.0/1000000);
 
 }
 

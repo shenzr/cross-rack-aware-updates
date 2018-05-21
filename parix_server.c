@@ -422,12 +422,12 @@ int main(int argc, char** argv){
     char* recv_buff = (char*)malloc(sizeof(TRANSMIT_DATA));
 	char* recv_head = (char*)malloc(head_size);
 
+    // init the sender info
+	struct sockaddr_in sender_addr;
+	socklen_t length=sizeof(sender_addr);
+
     while(1){
 
-		struct sockaddr_in sender_addr;
-		socklen_t length=sizeof(sender_addr);
-
-        printf("before accept:\n");
         connfd = accept(server_socket, (struct sockaddr*)&sender_addr, &length);
 		if(connfd<0){
 			perror("Accpet fails!\n");

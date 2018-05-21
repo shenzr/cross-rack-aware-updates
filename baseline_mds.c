@@ -91,9 +91,7 @@ int main(int argc, char** argv){
 
 	while(1){
 
-		printf("before accept:\n");
 		connfd=accept(server_socket, (struct sockaddr*)&sender_addr, &length);
-		
 		if(connfd<0){
 
 			perror("connection fails\n");
