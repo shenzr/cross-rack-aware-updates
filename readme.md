@@ -9,7 +9,13 @@ Before running the code, please take the following steps first:
 
 - please generate a big file named "data_file" which will be used for simulating disk reads and writes. In our test, we generally set its size as 60GB. 
 
-- If you wish to deploy the code onto Amazon EC2, please carefully specify the "security group" by only allowing the communications among the VMs using in the test. We have ever encountered unexpected connections (may be from other VMs), which will definitely affect the running status of evaluations. 
+- If you wish to deploy the code onto Amazon EC2, please do the following two things. 
+   * carefully specify the "security group" by only allowing the communications among the VMs used in the test. We have ever encountered unexpected connections (may be from other VMs), which will definitely affect the running status of evaluations. 
+
+
+   * Each VM in Amazon EC2 has two ip addresses, the public ip and the inner ip. You have to fill them in the common.c. 
+
+- In the code, we need to read the ip address from the NIC. In our test, the NIC in our testbed is "enp0s31f6" (see the function "GetLocalIp" in common.c). If your machine is equipped with different NIC, please change it. 
 
 An example of running CAU codes: 
 
