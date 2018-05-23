@@ -7,7 +7,7 @@ Before running the program, please take the following steps first:
 - change the default configurations in "config.h", including the erasure code you wish to use, and data center architecutre (e.g., the number of racks, and the number of nodes in each rack).
   Notice that we currently assume that all racks are composed of the same number of nodes. 
 
-- run "gen_chunk_distribn" on MDS, which will generate the mapping information between the logical chunk and the associated storage node. The MDe will use it for chunk addressing.
+- run "gen_chunk_distribn" on MDS, which will generate the mapping information between the logical chunk and the associated storage node. The MDS will use it for chunk addressing.
 
   Notice that the mapping information is generated based on the selected erasure coding and the system architecture specified in "config.h"
 
