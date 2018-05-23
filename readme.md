@@ -15,7 +15,7 @@ An example of running CAU codes:
 
 - make: this step will generate the executable files 
 
-- copy the executable files with the suffix of "*_mds" and the "chunk\_map" file to MDS. 
+- copy the executable files with the suffix of "\_mds" and the "chunk\_map" file to MDS. 
 
 - copy the executable files with the suffix of "\_server" to storage nodes. 
 
