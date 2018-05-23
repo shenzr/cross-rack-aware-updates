@@ -79,39 +79,39 @@ void trnsfm_char_to_int(char *char_data, long long *data){
 
 void check_chunk(int stripe_id){
 
-	int bucket_id;
-	int i;
-	int if_find;
+    int bucket_id;
+    int i;
+    int if_find;
 
-	bucket_id=stripe_id%bucket_num;
-	if_find=0;
+    bucket_id=stripe_id%bucket_num;
+    if_find=0;
 
-	//printf("bucket_id=%d\n", bucket_id);
+    //printf("bucket_id=%d\n", bucket_id);
 
-	//check if the chunk is in the bucket 
-	for(i=0; i<entry_num; i++){
+    //check if the chunk is in the bucket 
+    for(i=0; i<entry_num; i++){
 
-		if(distinct_stripe_bucket[bucket_id*entry_num+i]==-1)
-			break;
+        if(distinct_stripe_bucket[bucket_id*entry_num+i]==-1)
+            break;
 
-		if(distinct_stripe_bucket[bucket_id*entry_num+i]==stripe_id){
-			if_find=1;
-			break;
-			}
+        if(distinct_stripe_bucket[bucket_id*entry_num+i]==stripe_id){
+            if_find=1;
+            break;
+        }
 
-		}
+    }
 
-	if(i>=entry_num){
+    if(i>=entry_num){
 
-		printf("ERR: bucket-%d is full\n", bucket_id);
-		exit(1);
+        printf("ERR: bucket-%d is full\n", bucket_id);
+        exit(1);
 
-		}
+    }
 
-	if(if_find==0){
-		distinct_stripe_bucket[bucket_id*entry_num+i]=stripe_id;
-		distin_count++;
-		}
+    if(if_find==0){
+        distinct_stripe_bucket[bucket_id*entry_num+i]=stripe_id;
+        distin_count++;
+    }
 
 }
 
@@ -128,13 +128,13 @@ void read_trace(char *trace_name, int analyze_gran){
 
 
     char operation[150];
-	char time_stamp[50];
-	char workload_name[10];
-	char volumn_id[5];
+    char time_stamp[50];
+    char workload_name[10];
+    char volumn_id[5];
     char op_type[10];
     char offset[20];
     char size[10];
-	char usetime[10];
+    char usetime[10];
     char divider=',';
 
     int i;
@@ -142,7 +142,7 @@ void read_trace(char *trace_name, int analyze_gran){
     int access_chunk_num;
     int ret;
     int count;
-	int access_start_stripe, access_end_stripe;
+    int access_start_stripe, access_end_stripe;
 
 
     long long *size_int;
@@ -153,33 +153,33 @@ void read_trace(char *trace_name, int analyze_gran){
     offset_int=&a;
     size_int=&b;
     count=0;
-	
+
     while(fgets(operation, sizeof(operation), fp)) {
 
         new_strtok(operation,divider,time_stamp);
         new_strtok(operation,divider,workload_name);
-		new_strtok(operation,divider,volumn_id);
-		new_strtok(operation,divider,op_type);
-		new_strtok(operation,divider,offset);
+        new_strtok(operation,divider,volumn_id);
+        new_strtok(operation,divider,op_type);
+        new_strtok(operation,divider,offset);
         new_strtok(operation,divider, size);
-		new_strtok(operation,divider,usetime);
+        new_strtok(operation,divider,usetime);
 
         if((ret=strcmp(op_type, "Read"))==0)
             continue;
 
         count++;
 
-		if(count==analyze_gran){
+        if(count==analyze_gran){
 
-			//reset info
-			analyze_count++;
-			aver_locality+=distin_count;
-			
-			distin_count=0;
-			memset(distinct_stripe_bucket, -1, sizeof(int)*distin_chnk_num);
+            //reset info
+            analyze_count++;
+            aver_locality+=distin_count;
 
-			count=0;
-			}
+            distin_count=0;
+            memset(distinct_stripe_bucket, -1, sizeof(int)*distin_chnk_num);
+
+            count=0;
+        }
 
         //printf("\n\n\ncount=%d, op_type=%s, offset=%s, size=%s\n", count, op_type, offset, size);
 
@@ -193,25 +193,25 @@ void read_trace(char *trace_name, int analyze_gran){
         access_start_chunk=(*offset_int)/((long long)(chunk_size));
         access_end_chunk=(*offset_int+*size_int-1)/((long long)(chunk_size));
 
-		access_start_stripe=access_start_chunk/data_chunks;
-		access_end_stripe=access_end_chunk/data_chunks;
+        access_start_stripe=access_start_chunk/data_chunks;
+        access_end_stripe=access_end_chunk/data_chunks;
 
-		//printf("access_start_chunk=%d, access_end_chunk=%d\n", access_start_chunk, access_end_chunk);
+        //printf("access_start_chunk=%d, access_end_chunk=%d\n", access_start_chunk, access_end_chunk);
 
-		for(i=access_start_stripe; i<=access_end_stripe; i++)
-			check_chunk(i);
+        for(i=access_start_stripe; i<=access_end_stripe; i++)
+            check_chunk(i);
 
     }
 
-	//for the end of the file 
-	aver_locality+=distin_count;
-	analyze_count++;
+    //for the end of the file 
+    aver_locality+=distin_count;
+    analyze_count++;
 
-	printf("aver_locality=%d, analyze_count=%d\n", aver_locality, analyze_count);
-	printf("Trace-%s: locality_ratio=%lf\n", trace_name, aver_locality*1.0/analyze_count);
+    printf("aver_locality=%d, analyze_count=%d\n", aver_locality, analyze_count);
+    printf("Trace-%s: locality_ratio=%lf\n", trace_name, aver_locality*1.0/analyze_count);
 
-	aver_locality=0;
-	analyze_count=0;
+    aver_locality=0;
+    analyze_count=0;
 
     fclose(fp);
 
@@ -221,23 +221,23 @@ void read_trace(char *trace_name, int analyze_gran){
 //this program is to analyze the trace locality
 int main(int argc, char** argv){
 
-   if(argc!=2){
-    printf("input error: ./trace_analyze analyze_granularity!\n");
-    exit(1);
-  }
-   
-   int analyze_gran=atoi(argv[1]);
+    if(argc!=2){
+        printf("input error: ./trace_analyze analyze_granularity!\n");
+        exit(1);
+    }
 
-   char* trace[36]={"wdev_1.csv","wdev_2.csv","rsrch_1.csv","wdev3.csv","prxy_0.csv","rsrch_0.csv","prn_0.csv","src2_0.csv","mds_0.csv","proj_0.csv","stg_0.csv","ts_0.csv","wdev_0.csv","src1_2.csv", "web_0.csv","src2_2.csv","web_3.csv","hm_0.csv","usr_0.csv", "web_1.csv","src1_0.csv","stg_1.csv","prxy_1.csv","rsrch_2.csv", "prn_1.csv","usr_2.csv","proj_2.csv","proj_1.csv","usr_1.csv","mds_1.csv","proj_3.csv","src1_1.csv","hm_1.csv","src2_1.csv","proj_4.csv","web_2.csv"}
-;
-   int i;
-   for(i=0; i<36; i++){
+    int analyze_gran=atoi(argv[1]);
 
-		analyze_count=0;
-		aver_locality=0;
-   	    distin_count=0;  
-		
+    char* trace[36]={"wdev_1.csv","wdev_2.csv","rsrch_1.csv","wdev3.csv","prxy_0.csv","rsrch_0.csv","prn_0.csv","src2_0.csv","mds_0.csv","proj_0.csv","stg_0.csv","ts_0.csv","wdev_0.csv","src1_2.csv", "web_0.csv","src2_2.csv","web_3.csv","hm_0.csv","usr_0.csv", "web_1.csv","src1_0.csv","stg_1.csv","prxy_1.csv","rsrch_2.csv", "prn_1.csv","usr_2.csv","proj_2.csv","proj_1.csv","usr_1.csv","mds_1.csv","proj_3.csv","src1_1.csv","hm_1.csv","src2_1.csv","proj_4.csv","web_2.csv"}
+    ;
+    int i;
+    for(i=0; i<36; i++){
+
+        analyze_count=0;
+        aver_locality=0;
+        distin_count=0;  
+
         memset(distinct_stripe_bucket, -1, sizeof(int)*distin_chnk_num);
         read_trace(trace[i], analyze_gran);
-   }
+    }
 }

@@ -22,74 +22,74 @@
 //the number of chunks in a rack should not exceed max_chunks_per_rack
 void init_parix_fo_gen_chunk_distrbtn(){
 
-   int i,j;
-   int base;
-   int rank;
-   int node_id;
-   int rack_id;
+    int i,j;
+    int base;
+    int rank;
+    int node_id;
+    int rack_id;
 
-   int* chunk_to_node=(int*)malloc(sizeof(int)*num_chunks_in_stripe);
-   int* chunk_map=(int*)malloc(sizeof(int)*stripe_num*num_chunks_in_stripe); // maps chunk_id to node_id
-   int* flag_index=(int*)malloc(sizeof(int)*total_nodes_num);
-   int* num_chunk_in_rack=(int*)malloc(sizeof(int)*rack_num);
-   
-   srand((unsigned int)time(0));
+    int* chunk_to_node=(int*)malloc(sizeof(int)*num_chunks_in_stripe);
+    int* chunk_map=(int*)malloc(sizeof(int)*stripe_num*num_chunks_in_stripe); // maps chunk_id to node_id
+    int* flag_index=(int*)malloc(sizeof(int)*total_nodes_num);
+    int* num_chunk_in_rack=(int*)malloc(sizeof(int)*rack_num);
 
-   for(i=0; i<stripe_num; i++){
+    srand((unsigned int)time(0));
 
-	memset(chunk_to_node, -1, sizeof(int)*num_chunks_in_stripe);
-	memset(num_chunk_in_rack, 0, sizeof(int)*rack_num);
-	
-	//generate the distribution of each stripe randomly
+    for(i=0; i<stripe_num; i++){
 
-	for(j=0; j<total_nodes_num; j++)
-		flag_index[j]=j;
+        memset(chunk_to_node, -1, sizeof(int)*num_chunks_in_stripe);
+        memset(num_chunk_in_rack, 0, sizeof(int)*rack_num);
 
-	base=total_nodes_num;
+        //generate the distribution of each stripe randomly
 
-	for(j=0; j<num_chunks_in_stripe; j++){
+        for(j=0; j<total_nodes_num; j++)
+            flag_index[j]=j;
 
-		rank=rand()%base;
-		node_id=flag_index[rank];
-		rack_id=get_rack_id(node_id);
+        base=total_nodes_num;
 
-		if(num_chunk_in_rack[rack_id]>=max_chunks_per_rack){
-			j--;
-			continue;
-			}
+        for(j=0; j<num_chunks_in_stripe; j++){
 
-		chunk_to_node[j]=node_id;
-		flag_index[rank]=flag_index[total_nodes_num-j-1];
-		num_chunk_in_rack[rack_id]++;
+            rank=rand()%base;
+            node_id=flag_index[rank];
+            rack_id=get_rack_id(node_id);
 
-		base--;
-		
-		}
+            if(num_chunk_in_rack[rack_id]>=max_chunks_per_rack){
+                j--;
+                continue;
+            }
 
-	//printf("%d-th stripe node_map:\n",i);
-	for(j=0; j<num_chunks_in_stripe; j++)
-		chunk_map[i*num_chunks_in_stripe+j]=chunk_to_node[j];
+            chunk_to_node[j]=node_id;
+            flag_index[rank]=flag_index[total_nodes_num-j-1];
+            num_chunk_in_rack[rack_id]++;
 
-   	}
+            base--;
 
-   //write the mapping info to a chunk_2_node 
-   FILE *fd; 
+        }
 
-   fd=fopen("chunk_map","w");
-   for(i=0; i<stripe_num; i++){
+        //printf("%d-th stripe node_map:\n",i);
+        for(j=0; j<num_chunks_in_stripe; j++)
+            chunk_map[i*num_chunks_in_stripe+j]=chunk_to_node[j];
 
-	for(j=0; j<num_chunks_in_stripe; j++)
-		fprintf(fd, "%d ", chunk_map[i*num_chunks_in_stripe+j]);
+    }
 
-	fprintf(fd, "\n");
-   	}
+    //write the mapping info to a chunk_2_node 
+    FILE *fd; 
 
-   fclose(fd);
+    fd=fopen("chunk_map","w");
+    for(i=0; i<stripe_num; i++){
 
-   free(chunk_map);
-   free(chunk_to_node);
-   free(flag_index);
-   free(num_chunk_in_rack);
+        for(j=0; j<num_chunks_in_stripe; j++)
+            fprintf(fd, "%d ", chunk_map[i*num_chunks_in_stripe+j]);
+
+        fprintf(fd, "\n");
+    }
+
+    fclose(fd);
+
+    free(chunk_map);
+    free(chunk_to_node);
+    free(flag_index);
+    free(num_chunk_in_rack);
 
 
 }
@@ -97,9 +97,9 @@ void init_parix_fo_gen_chunk_distrbtn(){
 
 int main(int argc, char** argv){
 
-  init_parix_fo_gen_chunk_distrbtn();
+    init_parix_fo_gen_chunk_distrbtn();
 
-  return 0;
+    return 0;
 
 }
 

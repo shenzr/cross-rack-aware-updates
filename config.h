@@ -12,7 +12,7 @@
 #define total_nodes_num       9 //we set the number of chunks as the number of nodes in the local-cluster evaluation
 #define max_chunks_per_rack   3
 #define rack_num              3
-#define node_num_per_rack	  total_nodes_num/rack_num //we currently assume that each rack is composed of a constant number of nodes
+#define node_num_per_rack     total_nodes_num/rack_num //we currently assume that each rack is composed of a constant number of nodes
 
 /* varied configuration in evaluation*/
 #define max_updt_strps        100 //it defines the maximum stripes to be updated before invoking delta commit
@@ -57,8 +57,8 @@
 #define PRTY_UPDT_CMPLT       12
 #define PRTY_LOG              13
 #define TERMINATE             14
-#define UPDT_REQ			  15
-#define MVMT_CMLT 			  16
+#define UPDT_REQ              15
+#define MVMT_CMLT             16
 
 //the role of each node in parity-delta approach
 #define DATA_LEAF             1
@@ -84,7 +84,7 @@
 /* commit approach */
 #define DATA_DELTA_APPR       1
 #define PARITY_DELTA_APPR     2
-#define DIRECT_APPR 		  3
+#define DIRECT_APPR           3
 
 /*the port number*/ 
 #define MAX_PORT_NUM          65535
@@ -96,115 +96,115 @@
 #define UPDT_ACK_PORT         6666
 #define LOG_ACK_PORT          5555
 #define PARIX_UPDT_PORT       3333
-#define CMMT_PORT			  5566
-#define MVMT_PORT			  6677
+#define CMMT_PORT             5566
+#define MVMT_PORT             6677
 
-#define head_size			  16
+#define head_size             16
 #define UPDT_DATA             1
-#define ACK_INFO			  2
-#define CMD_INFO			  3
-#define REQ_INFO			  4
-#define METADATA_INFO	      5
+#define ACK_INFO              2
+#define CMD_INFO              3
+#define REQ_INFO              4
+#define METADATA_INFO         5
 
 
 #define num_tlrt_strp 10 //it is to avoid the last write may cause the num_updt_stripes > max_updt_strps, so we have to consider this case
 
 typedef struct _transmit_data{
 
-	int send_size;
-	int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
-	int stripe_id; //it will be used in commit
-	int data_chunk_id;//new data or data_delta
-	int updt_prty_id; //-1 in DATA_UPDT
-	int num_recv_chks_itn; //it is used in the partial encoding to specify how many chunks to receive for a internal node
-	int num_recv_chks_prt;
-	int port_num;          //we specify port_num in commit
-	int prty_delta_app_role; //the role is fixed for a given commit approach
-	int data_delta_app_prty_role; //if a parity chunk is an internal node in a rack, then it will always be the internal node in the data-delta approach
-	int chunk_store_index;
-	int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
-	int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
-	int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
-	int parix_updt_data_id[data_chunks];                     //used to record the number of updated chunks in a stripe
-	char next_ip[ip_len];
-	char sent_ip[ip_len]; //the ip addr to send the data 
-	char from_ip[ip_len]; //record the ip addr of the sender 
-	char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
-	//for example, the next_addr of the leaf node in parity delta approach should the internal node 
-	char buff[chunk_size];
+    int send_size;
+    int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
+    int stripe_id; //it will be used in commit
+    int data_chunk_id;//new data or data_delta
+    int updt_prty_id; //-1 in DATA_UPDT
+    int num_recv_chks_itn; //it is used in the partial encoding to specify how many chunks to receive for a internal node
+    int num_recv_chks_prt;
+    int port_num;          //we specify port_num in commit
+    int prty_delta_app_role; //the role is fixed for a given commit approach
+    int data_delta_app_prty_role; //if a parity chunk is an internal node in a rack, then it will always be the internal node in the data-delta approach
+    int chunk_store_index;
+    int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
+    int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
+    int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
+    int parix_updt_data_id[data_chunks];                     //used to record the number of updated chunks in a stripe
+    char next_ip[ip_len];
+    char sent_ip[ip_len]; //the ip addr to send the data 
+    char from_ip[ip_len]; //record the ip addr of the sender 
+    char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
+    //for example, the next_addr of the leaf node in parity delta approach should the internal node 
+    char buff[chunk_size];
 }TRANSMIT_DATA;
 
 typedef struct _aggt_send_data{
 
-	int this_data_id;
-	int this_rack_id;
-	int this_stripe_id;
-	int updt_prty_id;
-	int data_delta_num;
-	char next_ip[ip_len];
-	int recv_delta_id[data_chunks]; 
-	int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
-	char data_delta[chunk_size];
+    int this_data_id;
+    int this_rack_id;
+    int this_stripe_id;
+    int updt_prty_id;
+    int data_delta_num;
+    char next_ip[ip_len];
+    int recv_delta_id[data_chunks]; 
+    int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
+    char data_delta[chunk_size];
 
 }AGGT_SEND_DATA;
 
 
 typedef struct _ack_data{
 
-	int send_size;
-	int op_type;
-	int stripe_id;
-	int data_chunk_id;
-	int updt_prty_id;
-	int port_num;
-	char next_ip[ip_len];
+    int send_size;
+    int op_type;
+    int stripe_id;
+    int data_chunk_id;
+    int updt_prty_id;
+    int port_num;
+    char next_ip[ip_len];
 
 }ACK_DATA;
 
 
 typedef struct _cmd_data{
 
-	int send_size;
-	int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
-	int stripe_id; //it will be used in commit
-	int data_chunk_id;//new data or data_delta
-	int updt_prty_id; //-1 in DATA_UPDT
-	int num_recv_chks_itn; //it is used in the partial encoding to specify how many chunks to receive for a internal node
-	int num_recv_chks_prt;
-	int port_num;          //we specify port_num in commit
-	int prty_delta_app_role; //the role is fixed for a given commit approach
-	int data_delta_app_prty_role; //if a parity chunk is an internal node in a rack, then it will always be the internal node in the data-delta approach
-	int chunk_store_index;
-	int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
-	int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
-	int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
-	int parix_updt_data_id[data_chunks];                     //used to record the number of updated chunks in a stripe
-	char next_ip[ip_len];
-	char sent_ip[ip_len]; //the ip addr to send the data 
-	char from_ip[ip_len]; //record the ip addr of the sender 
-	char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
-	//for example, the next_addr of the leaf node in parity delta approach should the internal node 
+    int send_size;
+    int op_type; // DATA_UPDT for new data; DATA_COMMIT for partial encoding
+    int stripe_id; //it will be used in commit
+    int data_chunk_id;//new data or data_delta
+    int updt_prty_id; //-1 in DATA_UPDT
+    int num_recv_chks_itn; //it is used in the partial encoding to specify how many chunks to receive for a internal node
+    int num_recv_chks_prt;
+    int port_num;          //we specify port_num in commit
+    int prty_delta_app_role; //the role is fixed for a given commit approach
+    int data_delta_app_prty_role; //if a parity chunk is an internal node in a rack, then it will always be the internal node in the data-delta approach
+    int chunk_store_index;
+    int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
+    int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
+    int commit_app[num_chunks_in_stripe-data_chunks];        //parity-delta-first or data-delta-first
+    int parix_updt_data_id[data_chunks];                     //used to record the number of updated chunks in a stripe
+    char next_ip[ip_len];
+    char sent_ip[ip_len]; //the ip addr to send the data 
+    char from_ip[ip_len]; //record the ip addr of the sender 
+    char next_dest[num_chunks_in_stripe-data_chunks][ip_len]; //it records the next dest ip addr to send the td->buff in the m parity chunks' renewals
+    //for example, the next_addr of the leaf node in parity delta approach should the internal node 
 }CMD_DATA;
 
 
 typedef struct _updt_req_data{
 
-	int op_type;
-	int local_chunk_id;
+    int op_type;
+    int local_chunk_id;
 
 }UPDT_REQ_DATA;
 
 
 typedef struct _meta_info{
 
-	int stripe_id;
-	int data_chunk_id;
-	int port_num;
-	int chunk_store_index;
-	int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
-	int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
-	int if_first_update;
-	char next_ip[ip_len];
+    int stripe_id;
+    int data_chunk_id;
+    int port_num;
+    int chunk_store_index;
+    int updt_prty_nd_id[num_chunks_in_stripe-data_chunks]; 
+    int updt_prty_store_index[num_chunks_in_stripe-data_chunks];
+    int if_first_update;
+    char next_ip[ip_len];
 
 }META_INFO;
 
@@ -212,17 +212,17 @@ typedef struct _meta_info{
 
 typedef struct _recv_process_data{//it is used in receive data by multiple threads
 
-	int connfd; 
-	int recv_id;
+    int connfd; 
+    int recv_id;
 
 }RECV_PROCESS_DATA;
 
 typedef struct _recv_process_prty{//it is used in receive data by multiple threads
 
-	int connfd; 
-	int recv_id;
-	int prty_delta_role;
-	int prty_nd_id;
+    int connfd; 
+    int recv_id;
+    int prty_delta_role;
+    int prty_nd_id;
 
 }RECV_PROCESS_PRTY;
 
@@ -248,7 +248,7 @@ int   updt_cmlt_count[num_chunks_in_stripe-data_chunks];
 int   need_old_dt_count[num_chunks_in_stripe-data_chunks];
 int   prty_log_cmplt_count[num_chunks_in_stripe-data_chunks];
 int   commit_count[num_chunks_in_stripe-data_chunks];
-int	  mvmt_count[data_chunks];
+int   mvmt_count[data_chunks];
 
 /* global variables in CAU client */
 int mark_updt_stripes_tab[(max_updt_strps+num_tlrt_strp)*(data_chunks+1)]; //it records the updated data chunks and their stripes, the data_chunk column stores the data, while the data_chunk-th column store the stripe_id

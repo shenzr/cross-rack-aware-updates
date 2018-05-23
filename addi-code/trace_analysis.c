@@ -79,13 +79,13 @@ void trace_analysis_process(char* trace_name){
 
 
     char operation[150];
-	char time_stamp[50];
-	char workload_name[10];
-	char volumn_id[5];
+    char time_stamp[50];
+    char workload_name[10];
+    char volumn_id[5];
     char op_type[10];
     char offset[20];
     char size[10];
-	char usetime[10];
+    char usetime[10];
     char divider=',';
 
     int i;
@@ -93,11 +93,11 @@ void trace_analysis_process(char* trace_name){
     int ret;
 
 
-	int read_count;
-	int write_count;
-	double aver_write_size;
-	double deviation;
-	double write_size;
+    int read_count;
+    int write_count;
+    double aver_write_size;
+    double deviation;
+    double write_size;
 
 
     long long *size_int;
@@ -108,68 +108,68 @@ void trace_analysis_process(char* trace_name){
     offset_int=&a;
     size_int=&b;
 
-	read_count=0;
-	write_count=0;
-	aver_write_size=0;
-	deviation=0;
+    read_count=0;
+    write_count=0;
+    aver_write_size=0;
+    deviation=0;
 
     struct timeval bg_tm, ed_tm; 
-	
+
     while(fgets(operation, sizeof(operation), fp)) {
-		
+
         new_strtok(operation,divider,time_stamp);
         new_strtok(operation,divider,workload_name);
-		new_strtok(operation,divider,volumn_id);
-		new_strtok(operation,divider,op_type);
-		new_strtok(operation,divider,offset);
+        new_strtok(operation,divider,volumn_id);
+        new_strtok(operation,divider,op_type);
+        new_strtok(operation,divider,offset);
         new_strtok(operation,divider, size);
-		new_strtok(operation,divider,usetime);
+        new_strtok(operation,divider,usetime);
 
         if(strcmp(op_type, "Read")==0){
-			read_count++;
-			continue;
-        	}
+            read_count++;
+            continue;
+        }
 
-		else if(strcmp(op_type, "Write")==0)
-			write_count++;
+        else if(strcmp(op_type, "Write")==0)
+            write_count++;
 
-		//for the write operation, calculate the average write size
-		trnsfm_char_to_int(size, size_int);
+        //for the write operation, calculate the average write size
+        trnsfm_char_to_int(size, size_int);
 
-		aver_write_size+=(*size_int)*1.0/1024;
+        aver_write_size+=(*size_int)*1.0/1024;
 
     }
 
-	aver_write_size/=write_count;
+    aver_write_size/=write_count;
 
-	//set fp to the top of the file and calculate the standard deviation
-	rewind(fp);
+    //set fp to the top of the file and calculate the standard deviation
+    rewind(fp);
 
-	while(fgets(operation, sizeof(operation), fp)){
+    while(fgets(operation, sizeof(operation), fp)){
 
         new_strtok(operation,divider,time_stamp);
         new_strtok(operation,divider,workload_name);
-		new_strtok(operation,divider,volumn_id);
-		new_strtok(operation,divider,op_type);
-		new_strtok(operation,divider,offset);
+        new_strtok(operation,divider,volumn_id);
+        new_strtok(operation,divider,op_type);
+        new_strtok(operation,divider,offset);
         new_strtok(operation,divider, size);
-		new_strtok(operation,divider,usetime);
+        new_strtok(operation,divider,usetime);
 
-		if(strcmp(op_type, "Read")==0)
-			continue;
+        if(strcmp(op_type, "Read")==0)
+            continue;
 
         //get the write size
-		trnsfm_char_to_int(size, size_int);
+        trnsfm_char_to_int(size, size_int);
 
-		write_size=(double)((*size_int)*1.0/1024);
+        write_size=(double)((*size_int)*1.0/1024);
 
-		deviation+=pow((write_size-aver_write_size),2);
+        deviation+=pow((write_size-aver_write_size),2);
 
-		}
+    }
 
-	deviation=sqrt(deviation/write_count);
+    deviation=sqrt(deviation/write_count);
 
-	printf("++++ Trace: %s, Write_Count=%d, Write_Ratio=%lf, Aver_Write_Size=%lf, Deviation=%lf +++++++\n", trace_name, write_count, write_count*1.0/(write_count+read_count), aver_write_size, deviation);
+    printf("++++ Trace: %s, Write_Count=%d, Write_Ratio=%lf, Aver_Write_Size=%lf, Deviation=%lf +++++++\n", trace_name, write_count, write_count*1.0/(write_count+read_count), aver_write_size, deviation);
 
     fclose(fp);
 
@@ -178,14 +178,14 @@ void trace_analysis_process(char* trace_name){
 
 int main(int argc, char** argv){
 
-   if(argc!=2){
-     printf("./trace_analysis trace_name1 trace_name2 tace_name3 trace_name4!\n");
-     exit(0);
+    if(argc!=2){
+        printf("./trace_analysis trace_name1 trace_name2 tace_name3 trace_name4!\n");
+        exit(0);
     }
 
-   trace_analysis_process(argv[1]);
+    trace_analysis_process(argv[1]);
 
-   return 0;
+    return 0;
 
 }
 
