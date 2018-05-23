@@ -1,4 +1,4 @@
-This source code is an simple implementation to evaluate the delta-based update in erasure coded data centers. Please refer to the paper: 
+This source code is a simple implementation to evaluate the delta-based update in erasure coded data centers. Please refer to the paper: 
 *Cross-Rack-Aware Updates in Erasure-Coded Data Centers* (in Proceedings of 47th International Conference on Parallel Processing (**ICPP'18**)) for more technical details. 
 
 Before running the code, please take the following steps first: 
