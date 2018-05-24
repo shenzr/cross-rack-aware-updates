@@ -210,14 +210,15 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
     memcpy(mvm_data[1].next_ip, node_ip_set[in_chnk_node_id], ip_len);
     memcpy(mvm_data[1].buff, out_chunk, chunk_size);
 
+    memset(mvmt_count, 0, sizeof(int)*data_chunks);
+
     for(i=0; i<2; i++)
         pthread_create(&send_cmd_thread[i], NULL, send_mvm_data_process, (void *)(mvm_data+i)); 
 
+    para_recv_ack(mvm_data[0].stripe_id, 2, MVMT_PORT);
+
     for(i=0; i<2; i++)
         pthread_join(send_cmd_thread[i], NULL);
-
-    memset(mvmt_count, 0, sizeof(int)*data_chunks);
-    para_recv_ack(mvm_data[0].stripe_id, 2, MVMT_PORT);
 
     sum_ack=sum_array(data_chunks, mvmt_count);
 
