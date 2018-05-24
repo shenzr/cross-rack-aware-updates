@@ -22,24 +22,32 @@
 
 #include "config.h"
 
-/* it records the public ip address of amazon vms*/
+// =============== Fill the ip addresses of the nodes in the evaluation =============
+
+/* it records the public ip address in socket communications */
 char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.10.55",
     "192.168.10.56", "192.168.10.57", "192.168.10.59",
     "192.168.10.60", "192.168.10.61", "192.168.10.62"}; 
 
-/* it records the inner ip address of amazon vms */
+/* it records the inner ip address read from NIC */
 char* inner_ip_set[total_nodes_num]={"192.168.0.53", "192.168.0.54", "192.168.0.55", 
     "192.168.0.56", "192.168.0.57", "192.168.0.59", 
     "192.168.0.60", "192.168.0.61", "192.168.0.62"}; 
 
 char* mt_svr_ip="192.168.10.52";
 char* client_ip="192.168.10.51";
-char* gateway_ip="13.229.232.195";
+char* NIC="enp0s31f6";
+
+// if you use gateway server to simulate cross-rack transfers, then fill the gateway server
+char* gateway_ip="13.229.232.195"; 
+
+// =============== Fill the number of nodes in each rack in the evaluation ===========
 
 /* we currently consider all the regions have the same number of nodes */
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack};
 
 char* region_name[rack_num]={"Rack 0", "Rack 1", "Rack 2"};
+// ====================================================================================
 
 /*
  * a hash function to check the integrity of received data
@@ -264,7 +272,7 @@ void GetLocalIp(char* local_ip)
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-    strncpy(ifr.ifr_name, "enp0s31f6", IFNAMSIZ);
+    strncpy(ifr.ifr_name, NIC, IFNAMSIZ);
     ifr.ifr_name[IFNAMSIZ-1]=0;
 
     if(ioctl(sock, SIOCGIFADDR, &ifr)<0)

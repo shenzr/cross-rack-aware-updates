@@ -17,6 +17,8 @@ Before running the code, please take the following steps first:
 
 - In the code, we need to read the ip address from the NIC. In our test, the NIC in our testbed is "enp0s31f6" (see the function "GetLocalIp" in common.c). If your machine is equipped with a different NIC, please replace "enp0s31f6" with it. 
 
+- Fill the ip addresses of the nodes you use (including storage nodes, MDS, and client) in common.c, where "inner\_ip\" denotes the ip address read from NIC, and "public\_ip" denotes the ip address used in socket communications.  
+
 An example of running CAU codes: 
 
 - make: this step will generate the executable files 
