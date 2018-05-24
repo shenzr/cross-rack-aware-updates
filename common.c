@@ -38,7 +38,7 @@ char* mt_svr_ip="192.168.10.52";
 char* client_ip="192.168.10.51";
 char* NIC="enp0s31f6";
 
-// if you use gateway server to simulate cross-rack transfers, then fill the gateway server
+// if you would like to use a gateway server to simulate cross-rack transfers, then fill the gateway server
 char* gateway_ip="13.229.232.195"; 
 
 // =============== Fill the number of nodes in each rack in the evaluation ===========
@@ -47,7 +47,8 @@ char* gateway_ip="13.229.232.195";
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack};
 
 char* region_name[rack_num]={"Rack 0", "Rack 1", "Rack 2"};
-// ====================================================================================
+
+// ================================ END ===============================================
 
 /*
  * a hash function to check the integrity of received data
