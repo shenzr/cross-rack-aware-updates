@@ -114,8 +114,13 @@ void cau_server_updte(TRANSMIT_DATA* td){
         td->op_type=DATA_LOG;
         prty_node_id=td->updt_prty_nd_id[0];
         memcpy(td->sent_ip, node_ip_set[prty_node_id], ip_len);
+		memcpy(td->next_ip, td->sent_ip, ip_len);
 
-        send_data(td, td->sent_ip, td->port_num, NULL, NULL, UPDT_DATA);
+		if(GTWY_OPEN)
+			send_data(td, gateway_ip, td->port_num, NULL, NULL, UPDT_DATA);
+
+		else 
+			send_data(td, td->sent_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
         ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
         char* recv_buff=(char*)malloc(sizeof(ACK_DATA));
@@ -130,11 +135,9 @@ void cau_server_updte(TRANSMIT_DATA* td){
     else if(cau_num_rplc > 1){
 
         // send the new data to cau_num_rplc parity nodes in parallel
-        para_send_dt_prty(td, DATA_LOG, cau_num_rplc, td->port_num);
-
         // listen the ack in parallel 
         memset(prty_log_cmplt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
-        para_recv_ack(td->stripe_id, cau_num_rplc, LOG_ACK_PORT);
+        para_send_dt_prty(td, DATA_LOG, cau_num_rplc, td->port_num, LOG_ACK_PORT);
 
         // check the ack number 
         sum_cmplt=sum_array(num_chunks_in_stripe-data_chunks, prty_log_cmplt_count);
@@ -176,7 +179,7 @@ void cau_prty_delta_app_leaf_action(TRANSMIT_DATA* td, int updt_prty_rack_id, in
     temp_node_id=get_node_id(td->next_ip);
     temp_rack_id=get_rack_id(temp_node_id);
 
-    if((if_gateway_open==1) && (temp_rack_id!=rack_id))
+    if((GTWY_OPEN==1) && (temp_rack_id!=rack_id))
         send_data(delta, gateway_ip, SERVER_PORT, NULL, NULL, UPDT_DATA);
 
     else 
@@ -230,7 +233,7 @@ void* internal_aggr_send_process(void* ptr){
 
     // if the gateway server is defined, then send the parity delta to the gateway first once the parity nodes are in other racks
     // otherwise, directly send the parity delta to the parity nodes
-    if((if_gateway_open==1) && (temp_rack_id!=asd.this_rack_id))
+    if((GTWY_OPEN==1) && (temp_rack_id!=asd.this_rack_id))
         send_data(ped, gateway_ip, SERVER_PORT, NULL, NULL, UPDT_DATA);
 
     else 
@@ -614,7 +617,7 @@ void cau_server_commit(CMD_DATA* cmd){
 
             // if the gateway server is established and the parity rack is a different rack, then send the delta to the gateway first
             // otherwise, send the delta to a parity node of that rack
-            if((if_gateway_open==1) && (prty_rack_id!=rack_id)){
+            if((GTWY_OPEN==1) && (prty_rack_id!=rack_id)){
 
                 memcpy(td->next_ip, td->next_dest[prty_cmmt], ip_len);
                 send_data(td, gateway_ip, SERVER_PORT, NULL, NULL, UPDT_DATA);
@@ -677,7 +680,7 @@ void cau_server_commit(CMD_DATA* cmd){
 
 }
 
-void cau_send_cold_data(CMD_DATA* cmd){
+void cau_send_mvm_data(CMD_DATA* cmd){
 
     // read the cold data 
     char* cold_buff=(char*)malloc(sizeof(char)*chunk_size);
@@ -692,12 +695,13 @@ void cau_send_cold_data(CMD_DATA* cmd){
     // if the gateway server is established, then send the cold data to the gateway
     // else, send the data to the metadata server
     memcpy(td->next_ip, mt_svr_ip, ip_len);
+	td->port_num=MVMT_PORT;
 
-    if(if_gateway_open==1)
-        send_data(td, gateway_ip, cmd->port_num, NULL, NULL, UPDT_DATA);
+    if(GTWY_OPEN)
+        send_data(td, gateway_ip, UPDT_PORT, NULL, NULL, UPDT_DATA);
 
     else 
-        send_data(td, td->next_ip, cmd->port_num, NULL, NULL, UPDT_DATA);
+        send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
     free(cold_buff);
 
@@ -727,7 +731,6 @@ int main(int argc, char** argv){
     char sender_ip[ip_len];
 
     if_commit_start=0;
-    if_gateway_open=GTWY_OPEN;
 
     // truncate the log file in case of it still has the log info in last evaluation
     FILE* fd;
@@ -828,7 +831,7 @@ int main(int argc, char** argv){
         }
 
         // if it is the gateway, then just forward the data to the destination node 
-        if(((ret=strcmp(gateway_ip,local_ip))==0) && (if_gateway_open==1)){
+        if(((ret=strcmp(gateway_local_ip, local_ip))==0) && (GTWY_OPEN==1)){
 
             if(recv_data_type==UPDT_DATA)
                 gateway_forward_updt_data(td, sender_ip);
@@ -841,7 +844,7 @@ int main(int argc, char** argv){
 
             gateway_count++;
             if(gateway_count%1000==0)
-                printf("gateway_count=%d\n", gateway_count);
+                printf("have forwarded %d requests (including update, ack, and cmd)\n", gateway_count);
 
             close(connfd);
             continue;
@@ -853,24 +856,13 @@ int main(int argc, char** argv){
 
         else if(td->op_type==DATA_LOG && recv_data_type==UPDT_DATA){//this is performed at the parity chunk side 
 
-            //printf("Log Data from: \n");
-            print_amazon_vm_info(sender_ip);
-
-            struct timeval begin_time, end_time;
-            gettimeofday(&begin_time, NULL);
-
             cau_log_write(td);
 
             //check if it receives data from gateway
-            if((strcmp(sender_ip, gateway_ip)==0) && (if_gateway_open==1))
+            if((strcmp(sender_ip, gateway_ip)==0) && (GTWY_OPEN==1))
                 memcpy(sender_ip, td->from_ip, ip_len);
 
-            printf("send ack to %s\n", sender_ip);
-
             send_ack(td->stripe_id, td->data_chunk_id, td->updt_prty_id, sender_ip, LOG_ACK_PORT, LOG_CMLT);
-
-            gettimeofday(&end_time, NULL);
-            //printf("log_data_time=%lf\n", end_time.tv_sec-begin_time.tv_sec+(end_time.tv_usec-begin_time.tv_usec)*1.0/1000000);
 
         }
 
@@ -878,12 +870,10 @@ int main(int argc, char** argv){
             cau_server_commit(cmd);
 
         else if(cmd->op_type==CMD_MVMNT && recv_data_type==CMD_INFO)
-            cau_send_cold_data(cmd);
+            cau_send_mvm_data(cmd);
 
         else if(td->op_type==DATA_MVMNT && recv_data_type==UPDT_DATA)
-            cau_write_hot_data(td);
-
-        //printf("\n\n");
+            cau_write_hot_data(td);        
 
         close(connfd);
 

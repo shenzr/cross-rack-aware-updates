@@ -107,7 +107,7 @@ void* send_cmd_process(void* ptr){
 
     // if the system is on a local cluster with a node served as gateway, then send the data to the gateway first 
     // otherwise, send the data to the destination node directly 
-    if(if_gateway_open==1) 
+    if(GTWY_OPEN) 
         send_data(NULL, gateway_ip, UPDT_PORT, NULL, (CMD_DATA*)ptr, CMD_INFO);
 
     else 
@@ -126,7 +126,7 @@ void* send_mvm_data_process(void* ptr){
 
     tcd.port_num=UPDT_PORT; 
 
-    if(if_gateway_open==1)
+    if(GTWY_OPEN)
         send_data((TRANSMIT_DATA*)ptr, gateway_ip, UPDT_PORT, NULL, NULL, UPDT_DATA);
 
     else 
@@ -156,7 +156,7 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
     mvmn_cmd_mt[0].stripe_id=in_chunk_id/num_chunks_in_stripe;
     mvmn_cmd_mt[0].data_chunk_id=in_chunk_id%num_chunks_in_stripe;
     mvmn_cmd_mt[0].updt_prty_id=-1;
-    mvmn_cmd_mt[0].port_num=MVMT_PORT;
+    mvmn_cmd_mt[0].port_num=UPDT_PORT;
     mvmn_cmd_mt[0].prty_delta_app_role=IN_CHNK; // we reuse the item in td structure 
     mvmn_cmd_mt[0].chunk_store_index=locate_store_index(in_chnk_node_id, in_chunk_id);
     memcpy(mvmn_cmd_mt[0].next_ip, node_ip_set[in_chnk_node_id], ip_len);
@@ -167,7 +167,7 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
     mvmn_cmd_mt[1].stripe_id=out_chunk_id/num_chunks_in_stripe;
     mvmn_cmd_mt[1].data_chunk_id=out_chunk_id%num_chunks_in_stripe;
     mvmn_cmd_mt[1].updt_prty_id=-1;
-    mvmn_cmd_mt[1].port_num=MVMT_PORT;
+    mvmn_cmd_mt[1].port_num=UPDT_PORT;
     mvmn_cmd_mt[1].prty_delta_app_role=OUT_CHNK;
     mvmn_cmd_mt[1].chunk_store_index=locate_store_index(out_chnk_node_id, out_chunk_id);
     memcpy(mvmn_cmd_mt[1].next_ip, node_ip_set[out_chnk_node_id], ip_len);
@@ -266,7 +266,7 @@ void two_chunk_switch(int in_chunk_id, int in_chnk_node_id, int out_chunk_id, in
 
 
 /*
- * we assume that the data grouping is performed for each delta commit 
+ * we assume that the data grouping is performed after delta commit completes
  */
 void data_grouping(int num_rcrd_strp){
 
@@ -324,7 +324,7 @@ void data_grouping(int num_rcrd_strp){
 
             //we only consider the chunks that are accessed
             if(temp_dt_updt_freq_stripe[j]==-1)
-                break;
+				continue;
 
             stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
             node_id=global_chunk_map[mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[j]];
@@ -339,20 +339,78 @@ void data_grouping(int num_rcrd_strp){
 
             stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
             node_id=global_chunk_map[stripe_id*num_chunks_in_stripe+data_chunks+l];
+			
             prty_rack_id=get_rack_id(node_id); 
-
             rack_prty_num[prty_rack_id]++;
 
         }
 
-        //locate the destine rack id that has the maximum number of update chunks
+        // locate the destine rack id that has the maximum number of update chunks
         slct_rack=find_max_array_index(rcd_rack_id, rack_num);
+
+		// check how many racks have updated data
+		cddt_rack_id=find_none_zero_min_array_index(rcd_rack_id, rack_num, slct_rack);
+
+		// if there is only one rack with data updated 
+		if(cddt_rack_id==-1){
+		
+		    // if there are more than two chunks updated in the selected rack, then do not move
+			if(rcd_rack_id[slct_rack]>1)
+			    continue;
+		
+			// if the selected rack has parity chunks, then do not move 
+			if(rack_prty_num[slct_rack]>0)
+				continue;
+		
+			int max_prty_rack;
+			
+			// we can place the single hot data chunk to the rack where there are most parity chunks 
+			max_prty_rack=find_max_array_index(rack_prty_num, rack_num);
+
+			if(slct_rack==max_prty_rack)
+				continue;
+		
+			// locate the hot chunk
+			for(h=0; h<data_chunks; h++)
+				if(temp_dt_updt_freq_stripe[h]==1)
+					break;
+							
+			in_chunk_id=mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[h];
+		
+			// find a cold chunk in max_prty_rack
+			for(h=0; h<data_chunks; h++){
+		
+				if(temp_dt_updt_freq_stripe[h]==1)
+					continue;
+		
+				out_chunk_id=mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[h];
+		
+				temp_rack_id=get_rack_id(global_chunk_map[out_chunk_id]);
+		
+				if(temp_rack_id==max_prty_rack){
+		
+					in_chnk_nd_id=global_chunk_map[in_chunk_id];
+					out_chnk_nd_id=global_chunk_map[out_chunk_id];
+		
+					two_chunk_switch(in_chunk_id, in_chnk_nd_id, out_chunk_id, out_chnk_nd_id);
+					
+					break;
+		
+					}
+				}
+		
+			continue;
+		}
 
         int min_cmmt_cost=999999;
         final_cddt_rack_id=-1;
 
+        // if there are more than two rakcs with data updated 
         // perform separation for the racks with max and min number of update chunks 
         for(cddt_rack_id=0; cddt_rack_id<rack_num; cddt_rack_id++){
+
+			if(cddt_rack_id==slct_rack)
+				continue;
 
             // we prefer the two racks that can group all their stored hot data chunks within a rack
             if(rcd_rack_id[cddt_rack_id]+rcd_rack_id[slct_rack]>node_num_per_rack-rack_prty_num[slct_rack])
@@ -411,11 +469,11 @@ void data_grouping(int num_rcrd_strp){
 
         }
 
-        // select a cold chunk from this rack and perform switch
+        // select a cold chunk from slct_rack and perform switch
         for(j=0; j<data_chunks; j++){
 
             if(temp_dt_updt_freq_stripe[j]==-1)
-                break;
+                continue;
 
             its_rack_id=get_rack_id(global_chunk_map[mark_updt_stripes_tab[i*(data_chunks+1)]*num_chunks_in_stripe+temp_dt_chnk_index[j]]);
 
@@ -574,7 +632,7 @@ void cau_commit(int num_rcrd_strp){
 
         updt_stripe_id=mark_updt_stripes_tab[i*(data_chunks+1)];
 
-        printf("Stripe-%d Commit Starts:\n", updt_stripe_id);
+        printf("Stripe-%d Commit:\n", updt_stripe_id);
 
         memset(rack_has_prty, 0, sizeof(int)*rack_num);
 
@@ -593,8 +651,6 @@ void cau_commit(int num_rcrd_strp){
         for(j=0; j<rack_num; j++)
             if(rack_has_prty[j]>=1)
                 prty_rack_num++;
-
-        printf("prty_rack_num=%d\n", prty_rack_num);
 
         // it records the rack_id that stores parity chunks
         int* prty_rack_array=(int*)malloc(sizeof(int)*prty_rack_num); 
@@ -847,6 +903,9 @@ void cau_commit(int num_rcrd_strp){
         for(j=0; j<num_chunks_in_stripe-data_chunks; j++)
             pthread_create(&send_cmd_prty_thread[j], NULL, send_cmd_process, (void *)(tcd_prty+j));
 
+        // wait acks from parity nodes 
+        para_recv_ack(updt_stripe_id, num_chunks_in_stripe-data_chunks, CMMT_PORT);
+
         // wait the join the commands issued from parity nodes
         for(j=0; j<num_chunks_in_stripe-data_chunks; j++)
             pthread_join(send_cmd_prty_thread[j], NULL);
@@ -854,11 +913,6 @@ void cau_commit(int num_rcrd_strp){
         // wait the join of commands issued from data nodes involved in delta commit
         for(j=0; j<count; j++)
             pthread_join(send_cmd_dt_thread[j], NULL); 
-
-        // wait acks from parity nodes 
-        para_recv_ack(updt_stripe_id, num_chunks_in_stripe-data_chunks, CMMT_PORT);
-
-        printf("Stripe-%d Commit Completes \n", updt_stripe_id);
 
         free(recv_delta_num);
         free(first_prty_node_array);

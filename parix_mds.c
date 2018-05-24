@@ -28,9 +28,6 @@ void* parix_send_cmd_process(void* ptr){
 
     CMD_DATA pcd=*(CMD_DATA*)ptr;
 
-    printf("Send commit cmd to: ");
-    print_amazon_vm_info(pcd.sent_ip);
-
     send_data(NULL, pcd.sent_ip, pcd.port_num, NULL, (CMD_DATA*)ptr, CMD_INFO);
 
     return NULL;
@@ -85,7 +82,7 @@ void parix_commit(int num_rcrd_strp){
             prty_node_id=global_chunk_map[global_chunk_id];
             pcd_prty[prty_id].chunk_store_index=locate_store_index(prty_node_id, global_chunk_id);
 
-            if(if_gateway_open==1){
+            if(GTWY_OPEN){
 
                 memcpy(pcd_prty[prty_id].next_ip, node_ip_set[prty_node_id], ip_len);
                 memcpy(pcd_prty[prty_id].sent_ip, gateway_ip, ip_len);

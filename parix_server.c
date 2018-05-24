@@ -160,12 +160,11 @@ void parix_server_update(TRANSMIT_DATA* td){
     int sum_cmplt;
     int sum_need;
 
-    para_send_dt_prty(td, PARIX_LGWT, num_chunks_in_stripe-data_chunks, td->port_num);
-
     // listen the ack from parity chunks 
     memset(updt_cmlt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
     memset(need_old_dt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
-    para_recv_ack(td->stripe_id, num_chunks_in_stripe-data_chunks, UPDT_ACK_PORT);
+
+    para_send_dt_prty(td, PARIX_LGWT, num_chunks_in_stripe-data_chunks, td->port_num, UPDT_ACK_PORT);
 
     // check if the parity nodes need the old data chunk 
     // if the parity chunks need the old data, then resend the old data to them
@@ -173,13 +172,12 @@ void parix_server_update(TRANSMIT_DATA* td){
     if(sum_need==(num_chunks_in_stripe-data_chunks)){
 
         char* old_data=(char*)malloc(sizeof(char)*chunk_size);
-        read_old_data(old_data, td->chunk_store_index);
-
-        memcpy(td->buff, old_data, sizeof(char)*chunk_size);
-        para_send_dt_prty(td, PARIX_OLD, num_chunks_in_stripe-data_chunks, td->port_num);
-
         memset(need_old_dt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
-        para_recv_ack(td->stripe_id, num_chunks_in_stripe-data_chunks, UPDT_ACK_PORT);
+
+        read_old_data(old_data, td->chunk_store_index);
+        memcpy(td->buff, old_data, sizeof(char)*chunk_size);
+		
+        para_send_dt_prty(td, PARIX_OLD, num_chunks_in_stripe-data_chunks, td->port_num, UPDT_ACK_PORT);
 
         free(old_data);
 
@@ -210,7 +208,7 @@ void parix_log_write(TRANSMIT_DATA* td, char* sender_ip, int op_type){
 
     int if_need_old_dt;
 
-    if((strcmp(sender_ip, gateway_ip)==0) && (if_gateway_open==1))
+    if((strcmp(sender_ip, gateway_ip)==0) && (GTWY_OPEN==1))
         memcpy(td->next_ip, td->from_ip, ip_len);
 
     else 
@@ -237,8 +235,6 @@ void parix_log_write(TRANSMIT_DATA* td, char* sender_ip, int op_type){
 
     // if it is to log the old data chunk 
     else if (op_type==PARIX_OLD){
-
-        printf("op_type==PARIX_OLD\n");
 
         // specify fd at the bottom of the file
         log_write("parix_log_old_file", td);
@@ -388,14 +384,15 @@ int main(int argc, char** argv){
     int connfd = 0;
     int recv_data_type;
     int send_size;
-
+    int gateway_count;
     char local_ip[ip_len];
-    char* sender_ip;
-
-    if_gateway_open=GTWY_OPEN;
+    char sender_ip[ip_len];
 
     // initial encoding coefficinets
     encoding_matrix=reed_sol_vandermonde_coding_matrix(data_chunks, num_chunks_in_stripe-data_chunks, w);
+
+    // get local ip address
+    GetLocalIp(local_ip);
 
     // initial socket information
     server_socket=init_server_socket(UPDT_PORT);
@@ -426,6 +423,8 @@ int main(int argc, char** argv){
     struct sockaddr_in sender_addr;
     socklen_t length=sizeof(sender_addr);
 
+	gateway_count=0;
+
     while(1){
 
         connfd = accept(server_socket, (struct sockaddr*)&sender_addr, &length);
@@ -434,8 +433,8 @@ int main(int argc, char** argv){
             exit(1);
         }
 
+		memcpy(sender_ip, inet_ntoa(sender_addr.sin_addr), ip_len);
         send_size=-1;
-        sender_ip=inet_ntoa(sender_addr.sin_addr);
         recv_len=0;
 
         // first read a part of data to determine the size of transmitted data
@@ -492,7 +491,7 @@ int main(int argc, char** argv){
         }
 
         // if it is the gateway, then just forward the data to the destination node 
-        if((strcmp(gateway_ip,local_ip)==0) && (if_gateway_open==1)){
+        if((strcmp(gateway_local_ip, local_ip)==0) && (GTWY_OPEN==1)){
 
             if(recv_data_type==UPDT_DATA)
                 gateway_forward_updt_data(td, sender_ip);
@@ -502,6 +501,11 @@ int main(int argc, char** argv){
 
             else if (recv_data_type==CMD_INFO)
                 gateway_forward_cmd_data(cmd);
+
+            gateway_count++;
+            if(gateway_count%1000==0)
+                printf("have forwarded %d requests (including update, ack, and cmd)\n", gateway_count);
+
 
             close(connfd);
             continue;
@@ -513,14 +517,8 @@ int main(int argc, char** argv){
             parix_server_update(td);
 
         // this is performed by the parity node for 1) logging the old data chunk that is first updated; 2) logging every new data chunk 
-        else if((td->op_type==PARIX_LGWT || td->op_type==PARIX_OLD) && recv_data_type==UPDT_DATA){
-
-            printf("Log Data from: \n");
-            print_amazon_vm_info(sender_ip);
-
+        else if((td->op_type==PARIX_LGWT || td->op_type==PARIX_OLD) && recv_data_type==UPDT_DATA)
             parix_log_write(td, sender_ip, td->op_type);
-
-        }
 
         // this is performed by the parity node for delta commit 
         else if(cmd->op_type==PARIX_CMMT && recv_data_type==CMD_INFO)

@@ -7,7 +7,7 @@ Before running the code, please take the following steps first:
 
 - change the default configurations in "config.h", including the erasure code you wish to use, and data center architecutre (e.g., the number of racks, and the number of nodes in each rack). Notice that we currently assume that all racks are composed of the same number of nodes. 
 
-- please generate a big file named "data_file" which will be used for simulating disk reads and writes. In our test, we generally set its size as 60GB. 
+- please generate a big file named "data\_file" which will be used for simulating disk reads and writes. In our test, we generally set its size as 60GB. 
 
 - If you wish to deploy the code onto Amazon EC2, please do the following two things. 
    * carefully specify the "security group" by only allowing the communications among the VMs used in the test. We have ever encountered unexpected connections (may be from other VMs), which will definitely affect the running status of evaluations. 
@@ -25,12 +25,12 @@ An example of running CAU codes:
 
 - copy the executable files with the suffix of "\_mds" and the "chunk\_map" file to the MDS. 
 
-- copy the executable files with the suffix of "\_server" to storage nodes. 
+- copy the executable files with the suffix of "\_server" to storage nodes (including the gateway server if enabled). 
 
 - run "gen\_chunk_distribn" on the metadata server (MDS), which will generate the mapping information between the logical chunk and the associated storage node.  The mapping information will be recorded in a file named "chunk\_map" in MDS. The MDS will read it for chunk addressing. Notice that the mapping information is generated based on the selected erasure coding and the system architecture specified in "config.h". 
 
 - run the executable files with the suffix of "\_mds" (e.g., cau\_mds) on MDS and those with the suffix "\_server" (e.g., cau\_server) on storage nodes. 
 
-- run the executable file with the suffix "\_client" on the client side with the trace file to evaluate. 
+- run the executable file with the suffix "\_client" on the client side with the trace file to evaluate (e.g., ./cau\_client wdev\_1.csv). 
 
 If you have any question, please feel free to contact me (zhirong.shen2601@gmail.com). 

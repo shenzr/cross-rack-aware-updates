@@ -1,12 +1,13 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+/* if the server to act as gateway switch is open */
 #define GTWY_OPEN             0
 
 // ======================== Fill the erasure coding parameters ====================
 /* erasure coding settings */
 #define data_chunks           6
-#define num_chunks_in_stripe  9 //n in erasure coding
+#define num_chunks_in_stripe  9 
 #define chunk_size            1024*1024 // suppose the chunk size is 1MB
 
 // ======================== Fill the architecture parameters ====================
@@ -98,7 +99,7 @@
 #define NO_DEFINED_PORT       -1
 
 /*port num*/
-#define UPDT_PORT             22222
+#define UPDT_PORT             2222
 #define UPDT_ACK_PORT         6666
 #define LOG_ACK_PORT          5555
 #define PARIX_UPDT_PORT       3333
@@ -259,8 +260,5 @@ int   mvmt_count[data_chunks];
 /* global variables in CAU client */
 int mark_updt_stripes_tab[(max_updt_strps+num_tlrt_strp)*(data_chunks+1)]; //it records the updated data chunks and their stripes, the data_chunk column stores the data, while the data_chunk-th column store the stripe_id
 int prty_log_map[stripe_num*data_chunks];
-
-/* gateway switch */
-int if_gateway_open;
 
 #endif

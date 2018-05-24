@@ -30,7 +30,6 @@
 double aver_read_time;
 double aver_para_send_recv_time;
 double aver_send_ack_time;
-int updt_count;
 
 int updt_cmlt_count[num_chunks_in_stripe-data_chunks];
 
@@ -182,7 +181,7 @@ void baseline_para_send_dt_prty(TRANSMIT_DATA* td, int op_type, char* old_data){
         //printf("Update parity at: ");
         //print_amazon_vm_info(node_ip_set[its_prty_node_id]);
 
-        if((if_gateway_open==1) && (rack_id!=its_prty_rack_id)){
+        if((GTWY_OPEN==1) && (rack_id!=its_prty_rack_id)){
             memcpy(td_mt[j].next_ip, node_ip_set[its_prty_node_id], ip_len);
             memcpy(td_mt[j].sent_ip, gateway_ip, ip_len);
         }
@@ -190,11 +189,27 @@ void baseline_para_send_dt_prty(TRANSMIT_DATA* td, int op_type, char* old_data){
         else
             memcpy(td_mt[j].sent_ip, node_ip_set[its_prty_node_id], ip_len);
 
-        pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
+		pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
 
     }
 
-    // join the threads
+    // listen ack
+    int sum_cmplt;
+    memset(updt_cmlt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
+
+    // receive acks by using multi-thread
+    baseline_para_recv_ack(td->stripe_id, num_chunks_in_stripe-data_chunks, UPDT_ACK_PORT, ACK);
+
+    // to check if receiving the acks from all the parity nodes 
+    sum_cmplt=sum_array(num_chunks_in_stripe-data_chunks, updt_cmlt_count);
+    if(sum_cmplt!=(num_chunks_in_stripe-data_chunks)){
+
+        printf("update error! sum_cmplt=%d\n", sum_cmplt);
+        exit(1);
+
+    }
+
+    // join the send data threads
     for(j=0; j<num_chunks_in_stripe-data_chunks; j++)
         pthread_join(parix_updt_thread[j], NULL);
 
@@ -216,22 +231,6 @@ void baseline_server_update(TRANSMIT_DATA* td){
 
     // calculate the parity delta and send it to the corresponding parity nodes
     baseline_para_send_dt_prty(td, PRTY_UPDT, old_data);
-
-    // listen ack
-    int sum_cmplt;
-    memset(updt_cmlt_count, 0, sizeof(int)*(num_chunks_in_stripe-data_chunks));
-
-    // receive acks by using multi-thread
-    baseline_para_recv_ack(td->stripe_id, num_chunks_in_stripe-data_chunks, UPDT_ACK_PORT, ACK);
-
-    // to check if receiving the acks from all the parity nodes 
-    sum_cmplt=sum_array(num_chunks_in_stripe-data_chunks, updt_cmlt_count);
-    if(sum_cmplt!=(num_chunks_in_stripe-data_chunks)){
-
-        printf("update error! sum_cmplt=%d\n", sum_cmplt);
-        exit(1);
-
-    }
 
     // write the new data to the storage 
     write_new_data(td->buff, td->chunk_store_index);
@@ -261,14 +260,15 @@ void baseline_prty_updt(TRANSMIT_DATA* td, char* sender_ip){
     write_new_data(new_prty, td->chunk_store_index);
 
     // check if the sender is the gateway
-    if((strcmp(sender_ip, gateway_ip)==0) && (if_gateway_open==1))
-        memcpy(sender_ip, td->from_ip, ip_len);
+    if((strcmp(sender_ip, gateway_ip)==0) && (GTWY_OPEN==1))
+        strcpy(sender_ip, td->from_ip);
 
     // send an ack back
     send_ack(td->stripe_id, td->data_chunk_id, td->updt_prty_id, sender_ip, UPDT_ACK_PORT, PRTY_UPDT_CMPLT);
 
     free(old_prty);
     free(new_prty);
+
 }
 
 
@@ -283,22 +283,22 @@ int main(int argc, char** argv){
     aver_read_time=0;
     aver_para_send_recv_time=0;
     aver_send_ack_time=0;
-    updt_count=0;
 
     char local_ip[ip_len];
-    char* sender_ip;
+    char sender_ip[ip_len];
     int gateway_count;
     int send_size;
-
-    if_gateway_open=GTWY_OPEN;
 
     // initial encoding coefficinets based on the function from Jerasure
     encoding_matrix=reed_sol_vandermonde_coding_matrix(data_chunks, num_chunks_in_stripe-data_chunks, w);
 
+    // get the local ip 
+    GetLocalIp(local_ip);
+	
     // initial socket information
     server_socket=init_server_socket(UPDT_PORT);
 
-    if(listen(server_socket,100) == -1){
+    if(listen(server_socket,20) == -1){
         printf("Failed to listen.\n");
         exit(1);
     }
@@ -317,13 +317,13 @@ int main(int argc, char** argv){
 
     while(1){
 
-        connfd = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
+        connfd = accept(server_socket, (struct sockaddr*)&sender_addr, &length);
         if(connfd<0){
             perror("Accpet fails!\n");
             exit(1);
         }
 
-        sender_ip=inet_ntoa(sender_addr.sin_addr);
+        memcpy(sender_ip, inet_ntoa(sender_addr.sin_addr), ip_len);;
 
         recv_len=0;
         send_size=-1;
@@ -333,7 +333,6 @@ int main(int argc, char** argv){
         while(recv_len < head_size){
             read_size=read(connfd, recv_head+recv_len, head_size-recv_len);
             recv_len+=read_size;
-            //printf("recv_len=%d, head_size=%lu\n", recv_len, head_size);
         }
 
         memcpy(&send_size, recv_head, sizeof(int));
@@ -374,7 +373,7 @@ int main(int argc, char** argv){
 
         // if the gateway server is started and this server is the gateway server
         // then just forward the data
-        if((strcmp(gateway_ip, local_ip)==0) && (if_gateway_open==1)){
+        if((strcmp(gateway_local_ip, local_ip)==0) && (GTWY_OPEN==1)){
 
             if(recv_data_type==UPDT_DATA)
                 gateway_forward_updt_data(td, sender_ip);
@@ -384,25 +383,23 @@ int main(int argc, char** argv){
 
             gateway_count++;
 
-            close(connfd);
+			if(gateway_count%1000==0)
+				printf("have forwarded %d requests (including update, ack, and cmd)\n", gateway_count);
 
+            close(connfd);
             continue;
 
         }
 
         // if it is a data update request from the client
-        if(td->op_type==DATA_UPDT && recv_data_type==UPDT_DATA){
-
-
+        if(td->op_type==DATA_UPDT && recv_data_type==UPDT_DATA)
             baseline_server_update(td);
-            updt_count++;
-        }
+		
 
         // if it is a parity update request from a data server 
         else if(td->op_type==PRTY_UPDT && recv_data_type==UPDT_DATA)
             baseline_prty_updt(td, sender_ip);
-
-
+			
         close(connfd);
 
     }

@@ -31,7 +31,6 @@ void parix_update(META_INFO* md){
 
     // init transmit data 
     TRANSMIT_DATA* td=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA));
-    char* recv_buff=(char *)malloc(sizeof(TRANSMIT_DATA));
 
     td->send_size=sizeof(TRANSMIT_DATA);
     td->op_type=PARIX_UPDT;
@@ -75,17 +74,16 @@ void parix_update(META_INFO* md){
     // copy the ip address of the storage node from metadata info
     memcpy(td->next_ip, md->next_ip, ip_len);
 
-    //printf("Send new data to: ");
-    //print_amazon_vm_info(td->next_ip);
-
     // if there is a gateway server, then send the data to the gateway first; else, directly send the data to the destined storage server
-    if(if_gateway_open==1)
+    if(GTWY_OPEN)
         send_data(td, gateway_ip, td->port_num, NULL, NULL, UPDT_DATA);
     else 
         send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
     // listen ack
     ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
+    char* recv_buff=(char *)malloc(sizeof(TRANSMIT_DATA));
+
     listen_ack(ack, recv_buff, td->stripe_id, td->data_chunk_id, -1, UPDT_PORT, PARIX_UPDT_CMLT);
 
     free(td);
@@ -122,6 +120,7 @@ void parix_read_trace(char *trace_name){
     int access_start_chunk, access_end_chunk;
     int access_chunk_num;
     int ret;
+	int updt_req_cnt;
 
     META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
@@ -132,6 +131,7 @@ void parix_read_trace(char *trace_name){
     b=0LL;
     offset_int=&a;
     size_int=&b;
+	updt_req_cnt=0;
 
     memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
     cross_rack_updt_traffic=0;
@@ -149,6 +149,11 @@ void parix_read_trace(char *trace_name){
 
         if((ret=strcmp(op_type, "Read"))==0)
             continue;
+
+		updt_req_cnt++;
+
+		if(updt_req_cnt%500==0)
+			printf("%d update request finish \n", updt_req_cnt);
 
         trnsfm_char_to_int(offset, offset_int);
         trnsfm_char_to_int(size, size_int);
@@ -180,6 +185,8 @@ int main(int argc, char** argv){
 
     printf("Trace: %s\n", argv[1]);
     parix_read_trace(argv[1]);
+
+	printf("PARIX: Trace-%s replay finishes\n", argv[1]);
 
     return 0;
 }

@@ -25,27 +25,23 @@
 // =============== Fill the ip addresses of the nodes in the evaluation =============
 
 /* it records the public ip address in socket communications */
-char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.10.55",
-    "192.168.10.56", "192.168.10.57", "192.168.10.59",
-    "192.168.10.60", "192.168.10.61", "192.168.10.62"}; 
+char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.10.55", "192.168.10.56", "192.168.10.57", "192.168.10.59", "192.168.10.60", "192.168.10.61", "192.168.10.62"}; 
 
 /* it records the inner ip address read from NIC */
-char* inner_ip_set[total_nodes_num]={"192.168.0.53", "192.168.0.54", "192.168.0.55", 
-    "192.168.0.56", "192.168.0.57", "192.168.0.59", 
-    "192.168.0.60", "192.168.0.61", "192.168.0.62"}; 
+char* inner_ip_set[total_nodes_num]={"192.168.0.53", "192.168.0.54", "192.168.0.55", "192.168.0.56", "192.168.0.57", "192.168.0.59", "192.168.0.60", "192.168.0.61", "192.168.0.62"}; 
 
 char* mt_svr_ip="192.168.10.52";
 char* client_ip="192.168.10.51";
 char* NIC="enp0s31f6";
 
 // if you would like to use a gateway server to simulate cross-rack transfers, then fill the gateway server
-char* gateway_ip="13.229.232.195"; 
+char* gateway_ip="192.168.10.58"; 
+char* gateway_local_ip="192.168.0.58";
 
 // =============== Fill the number of nodes in each rack in the evaluation ===========
 
 /* we currently consider all the regions have the same number of nodes */
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack, node_num_per_rack};
-
 char* region_name[rack_num]={"Rack 0", "Rack 1", "Rack 2"};
 
 // ================================ END ===============================================
@@ -75,15 +71,11 @@ unsigned int RSHash(char* str, unsigned int len)
 int get_node_id(char* given_ip){
 
     int i;
-    int ret;
 
     //locate the node id
-    for(i=0; i<total_nodes_num; i++){
-
-        if((ret=strcmp(node_ip_set[i],given_ip))==0)
+    for(i=0; i<total_nodes_num; i++)
+        if(strcmp(node_ip_set[i],given_ip)==0)
             break;
-
-    }
 
     return i;
 
@@ -295,27 +287,14 @@ int get_local_node_id(){
 
     char local_ip[ip_len];
     int i;
-    int ret;
 
     GetLocalIp(local_ip);
 
-    if(if_gateway_open==1){
-
-        //locate the node id
-        for(i=0; i<total_nodes_num; i++)
-            if((ret=strcmp(node_ip_set[i],local_ip))==0)
-                break;
-    }
-
-    else {
-
-        for(i=0; i<total_nodes_num; i++)
-            if(strcmp(local_ip, inner_ip_set[i])==0)
-                break;
-    }
+    for(i=0; i<total_nodes_num; i++)
+        if(strcmp(local_ip, inner_ip_set[i])==0)
+            break;
 
     return i;
-
 }
 
 
@@ -730,13 +709,11 @@ void bitwiseXor(char* result, char* srcA, char* srcB, int length) {
  */
 void aggregate_data(char* data_delta, int num_recv_chnks, char* ped){
 
-    //printf("in aggregated_data:\n");
 
     int i;
 
     char tmp_buff[chunk_size];
     char tmp_data_delta[chunk_size];
-
     char* addrA;
     char* res;
     char* tmp;
@@ -745,8 +722,6 @@ void aggregate_data(char* data_delta, int num_recv_chnks, char* ped){
 
     addrA=tmp_data_delta;
     res=tmp_buff;
-
-    //printf("start_addr=%x:\n",intnl_recv_data);
 
     for(i=0; i<num_recv_chnks; i++){
 
@@ -879,14 +854,14 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
     ack->data_chunk_id=dt_id;
     ack->updt_prty_id=prty_id;
     ack->port_num=port_num;
-    memcpy(ack->next_ip, destined_ip, ip_len);
+    strcpy(ack->next_ip, destined_ip);
 
-    // if the destination node is the client node, then send the ack to the gateway if the gateway is opened 
-    if(strcmp(destined_ip, client_ip)==0){
+    // if the destination node is the client node or mds, then send the ack to the gateway if the gateway is opened 
+    if(strcmp(destined_ip, client_ip)==0 || strcmp(destined_ip, mt_svr_ip)==0){
 
-        memcpy(ack->next_ip, client_ip, ip_len);
+        memcpy(ack->next_ip, destined_ip, ip_len);
 
-        if(if_gateway_open==1)
+        if(GTWY_OPEN)
             send_data(NULL, gateway_ip, SERVER_PORT, ack, NULL, ACK_INFO);
 
         else 
@@ -905,16 +880,11 @@ void send_ack(int stripe_id, int dt_id, int prty_id, char* destined_ip, int port
 
     // if the gateway is opened and the two nodes are in different racks, then forward the data to the gateway first
     // else direct send the data to the destination node
-    if((if_gateway_open==1) && (des_rack_id!=rack_id)){
-
-        memcpy(ack->next_ip, destined_ip, ip_len);
+    if((GTWY_OPEN==1) && (des_rack_id!=rack_id))
         send_data(NULL, gateway_ip, SERVER_PORT, ack, NULL, ACK_INFO);
-
-    }
 
     else 
         send_data(NULL, ack->next_ip, port_num, ack, NULL, ACK_INFO);
-
 
     free(ack);
 
@@ -1189,76 +1159,6 @@ void write_new_data(char* write_buff, int store_index){
 
 }
 
-/*
- * it generates a thread to send data 
- */ 
-void* send_updt_data_process(void* ptr){
-
-    TRANSMIT_DATA td = *(TRANSMIT_DATA *)ptr;
-
-    send_data((TRANSMIT_DATA *)ptr, td.sent_ip, td.port_num, NULL, NULL, UPDT_DATA);
-
-    return NULL;
-}
-
-
-/*
- * send the new data to the num_updt_prty parity nodes
- */
-void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int port_num){
-
-    int j; 
-    int prty_node_id;
-    int prty_rack_id;
-    int node_id;
-    int rack_id;
-
-    TRANSMIT_DATA* td_mt=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA)*num_updt_prty);
-
-    // get the rack_id of the local node
-    node_id=get_local_node_id();
-    rack_id=get_rack_id(node_id);
-
-    pthread_t* parix_updt_thread=(pthread_t*)malloc(sizeof(pthread_t)*num_updt_prty);
-    memset(parix_updt_thread, 0, sizeof(pthread_t)*num_updt_prty);
-
-    for(j=0; j<num_updt_prty; j++){
-
-        // initialize td structure
-        td_mt[j].send_size=sizeof(TRANSMIT_DATA);
-        td_mt[j].op_type=op_type; 
-        td_mt[j].data_chunk_id=td->data_chunk_id;
-        td_mt[j].stripe_id=td->stripe_id;
-        td_mt[j].num_recv_chks_itn=-1;
-        td_mt[j].num_recv_chks_prt=-1;
-        td_mt[j].port_num=port_num;
-        td_mt[j].updt_prty_id=j;
-        memcpy(td_mt[j].buff, td->buff, sizeof(char)*chunk_size);
-
-        prty_node_id=td->updt_prty_nd_id[j]; 
-        prty_rack_id=get_rack_id(prty_node_id);
-
-        // if send data across racks, we have to check if the gateway is opened
-        if((if_gateway_open==1) && (rack_id!=prty_rack_id)){
-            memcpy(td_mt[j].sent_ip, gateway_ip, ip_len);
-            memcpy(td_mt[j].next_ip, node_ip_set[prty_node_id], ip_len);
-        }
-
-        else 
-            memcpy(td_mt[j].sent_ip, node_ip_set[prty_node_id], ip_len);
-
-        pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
-
-    }
-
-    // join the threads
-    for(j=0; j<num_updt_prty; j++)
-        pthread_join(parix_updt_thread[j], NULL);
-
-    free(td_mt);
-    free(parix_updt_thread);
-
-}
 
 /*
  * a thread receives ack 
@@ -1350,10 +1250,6 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
     while(1){
 
         connfd[index] = accept(server_socket, (struct sockaddr*)&sender_addr,&length);
-
-        //printf("Recv Ack from: ");
-        //print_amazon_vm_info(inet_ntoa(sender_addr.sin_addr));
-
         rpd[index].connfd=connfd[index];
         rpd[index].recv_id=index;
 
@@ -1363,8 +1259,7 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
         index++;
         if(index>=num_recv_chnks)
             break;
-
-
+		
     }
 
     for(i=0; i<num_recv_chnks; i++)
@@ -1376,6 +1271,81 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
     free(rpd);
     free(connfd);
     close(server_socket);
+
+}
+
+
+/*
+ * it generates a thread to send data 
+ */ 
+void* send_updt_data_process(void* ptr){
+
+    TRANSMIT_DATA td = *(TRANSMIT_DATA *)ptr;
+
+    send_data((TRANSMIT_DATA *)ptr, td.sent_ip, td.port_num, NULL, NULL, UPDT_DATA);
+
+    return NULL;
+}
+
+
+/*
+ * send the new data to the num_updt_prty parity nodes
+ */
+void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int send_port, int ack_port){
+
+    int j; 
+    int prty_node_id;
+    int prty_rack_id;
+    int node_id;
+    int rack_id;
+
+    TRANSMIT_DATA* td_mt=(TRANSMIT_DATA*)malloc(sizeof(TRANSMIT_DATA)*num_updt_prty);
+
+    // get the rack_id of the local node
+    node_id=get_local_node_id();
+    rack_id=get_rack_id(node_id);
+
+    pthread_t* parix_updt_thread=(pthread_t*)malloc(sizeof(pthread_t)*num_updt_prty);
+    memset(parix_updt_thread, 0, sizeof(pthread_t)*num_updt_prty);
+
+    for(j=0; j<num_updt_prty; j++){
+
+        // initialize td structure
+        td_mt[j].send_size=sizeof(TRANSMIT_DATA);
+        td_mt[j].op_type=op_type; 
+        td_mt[j].data_chunk_id=td->data_chunk_id;
+        td_mt[j].stripe_id=td->stripe_id;
+        td_mt[j].num_recv_chks_itn=-1;
+        td_mt[j].num_recv_chks_prt=-1;
+        td_mt[j].port_num=send_port;
+        td_mt[j].updt_prty_id=j;
+        memcpy(td_mt[j].buff, td->buff, sizeof(char)*chunk_size);
+
+        prty_node_id=td->updt_prty_nd_id[j]; 
+        prty_rack_id=get_rack_id(prty_node_id);
+
+        // if send data across racks, we have to check if the gateway is opened
+        if((GTWY_OPEN==1) && (rack_id!=prty_rack_id)){
+            memcpy(td_mt[j].sent_ip, gateway_ip, ip_len);
+            memcpy(td_mt[j].next_ip, node_ip_set[prty_node_id], ip_len);
+        }
+
+        else 
+            memcpy(td_mt[j].sent_ip, node_ip_set[prty_node_id], ip_len);
+
+        pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
+
+    }
+
+	// parallel receive data 
+	para_recv_ack(td->stripe_id, num_updt_prty, ack_port);
+
+    // join the threads
+    for(j=0; j<num_updt_prty; j++)
+        pthread_join(parix_updt_thread[j], NULL);
+
+    free(td_mt);
+    free(parix_updt_thread);
 
 }
 
@@ -1417,6 +1387,7 @@ void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 
     /* record the source ip address */
     memcpy(td->from_ip, sender_ip, ip_len);
+	
     send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
 }
