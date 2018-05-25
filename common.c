@@ -520,6 +520,13 @@ int update_loged_chunks(int given_chunk_id){
         }
     }
 
+	if(i>=entry_per_bucket){
+
+		printf("ERR: entry_per_bucket is too small\n");
+		return -1;
+		
+		}
+
     // record the given_chunk_id
     newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i]=given_chunk_id;
     newest_chunk_log_order[bucket_id*entry_per_bucket*2+2*i+1]=new_log_chunk_cnt;

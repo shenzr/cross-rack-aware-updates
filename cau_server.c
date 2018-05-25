@@ -52,8 +52,13 @@ void cau_log_write(TRANSMIT_DATA* td){
     // append the data and update the log records
     log_write("cau_log_file", td);
     ret=update_loged_chunks(local_chunk_id); 
-    new_log_chunk_cnt++;
 
+	if(ret!=-1)
+		new_log_chunk_cnt++;
+
+	else 
+		exit(1);
+	
 }
 
 /* 
