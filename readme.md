@@ -34,7 +34,7 @@ An example of running CAU codes:
 
 - copy the executable files with the suffix of "\_server" to storage nodes (including the gateway server if enabled). 
 
-- run the executable files with the suffix of "\_mds" (e.g., cau\_mds) on MDS and those with the suffix "\_server" (e.g., cau\_server) on storage nodes. 
+- run the executable files with the suffix of "\_mds" (e.g., cau\_mds) on MDS and those with the suffix "\_server" (e.g., cau\_server) on storage nodes (including data nodes, parity nodes, and the gateway server if enabled). 
 
 - run the executable file with the suffix "\_client" on the client side with the trace file to evaluate (e.g., ./cau\_client wdev\_1.csv). Some example traces are included in "example-traces"
 
