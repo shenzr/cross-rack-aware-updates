@@ -6,16 +6,16 @@
 
 // ======================== Fill the erasure coding parameters ====================
 /* erasure coding settings */
-#define data_chunks           6
-#define num_chunks_in_stripe  9 
+#define data_chunks           2
+#define num_chunks_in_stripe  4 
 #define chunk_size            1024*1024 // suppose the chunk size is 1MB
 
 // ======================== Fill the architecture parameters ====================
 
 /* configurations of data centers */
-#define total_nodes_num       9 //we set the number of chunks as the number of nodes in the local-cluster evaluation
-#define max_chunks_per_rack   3
-#define rack_num              3
+#define total_nodes_num       4 //we set the number of chunks as the number of nodes in the local-cluster evaluation
+#define max_chunks_per_rack   2
+#define rack_num              2
 #define node_num_per_rack     total_nodes_num/rack_num //we currently assume that each rack is composed of a constant number of nodes
 
 // ============================= END ==============================================
