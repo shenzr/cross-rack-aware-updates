@@ -45,11 +45,11 @@ void cau_update(META_INFO* md){
     memcpy(td->next_ip, md->next_ip, ip_len);
 
     // if the gateway is opened, then send the updated data to gateway first
-	if(GTWY_OPEN)
-		send_data(td, gateway_ip, UPDT_PORT, NULL, NULL, UPDT_DATA);
+    if(GTWY_OPEN)
+        send_data(td, gateway_ip, UPDT_PORT, NULL, NULL, UPDT_DATA);
 
-	else 
-		send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
+    else 
+        send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
     // listen the ack info
     ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
@@ -89,7 +89,7 @@ void cau_read_trace(char *trace_name){
     int i;
     int access_start_chunk, access_end_chunk;
     int ret;
-	int updt_req_cnt;
+    int updt_req_cnt;
 
     long long *size_int;
     long long *offset_int;
@@ -98,7 +98,7 @@ void cau_read_trace(char *trace_name){
     b=0LL;
     offset_int=&a;
     size_int=&b;
-	updt_req_cnt=0;
+    updt_req_cnt=0;
 
     META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
@@ -119,10 +119,10 @@ void cau_read_trace(char *trace_name){
         if((ret=strcmp(op_type, "Read"))==0)
             continue;
 
-		updt_req_cnt++;
+        updt_req_cnt++;
 
-		if(updt_req_cnt%500==0)
-			printf("%d update request finish \n", updt_req_cnt);
+        if(updt_req_cnt%500==0)
+            printf("%d update request finish \n", updt_req_cnt);
 
         // read the offset and operation size 
         // get the range of operated data chunks 
@@ -156,7 +156,7 @@ int main(int argc, char** argv){
     printf("Trace: %s\n", argv[1]);
     cau_read_trace(argv[1]);
 
-	printf("CAU: Trace-%s replay finishes\n", argv[1]);
+    printf("CAU: Trace-%s replay finishes\n", argv[1]);
 
     return 0;
 }

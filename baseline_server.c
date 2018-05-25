@@ -189,7 +189,7 @@ void baseline_para_send_dt_prty(TRANSMIT_DATA* td, int op_type, char* old_data){
         else
             memcpy(td_mt[j].sent_ip, node_ip_set[its_prty_node_id], ip_len);
 
-		pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
+        pthread_create(&parix_updt_thread[j], NULL, send_updt_data_process, td_mt+j);
 
     }
 
@@ -294,7 +294,7 @@ int main(int argc, char** argv){
 
     // get the local ip 
     GetLocalIp(local_ip);
-	
+
     // initial socket information
     server_socket=init_server_socket(UPDT_PORT);
 
@@ -383,8 +383,8 @@ int main(int argc, char** argv){
 
             gateway_count++;
 
-			if(gateway_count%1000==0)
-				printf("have forwarded %d requests (including update, ack, and cmd)\n", gateway_count);
+            if(gateway_count%1000==0)
+                printf("have forwarded %d requests (including update, ack, and cmd)\n", gateway_count);
 
             close(connfd);
             continue;
@@ -394,12 +394,12 @@ int main(int argc, char** argv){
         // if it is a data update request from the client
         if(td->op_type==DATA_UPDT && recv_data_type==UPDT_DATA)
             baseline_server_update(td);
-		
+
 
         // if it is a parity update request from a data server 
         else if(td->op_type==PRTY_UPDT && recv_data_type==UPDT_DATA)
             baseline_prty_updt(td, sender_ip);
-			
+
         close(connfd);
 
     }

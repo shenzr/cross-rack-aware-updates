@@ -94,7 +94,7 @@ void baseline_read_trace(char *trace_name){
     int i;
     int access_start_chunk, access_end_chunk;
     int access_chunk_num;
-	int updt_req_cnt;
+    int updt_req_cnt;
     int ret;
 
     META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
@@ -106,7 +106,7 @@ void baseline_read_trace(char *trace_name){
     b=0LL;
     offset_int=&a;
     size_int=&b;
-	updt_req_cnt=0;
+    updt_req_cnt=0;
 
     // read every operation from the trace
     while(fgets(operation, sizeof(operation), fp)) {
@@ -123,10 +123,10 @@ void baseline_read_trace(char *trace_name){
         if((ret=strcmp(op_type, "Read"))==0)
             continue;
 
-		updt_req_cnt++;
+        updt_req_cnt++;
 
-		if(updt_req_cnt%500==0)
-			printf("%d update request finish \n", updt_req_cnt);
+        if(updt_req_cnt%500==0)
+            printf("%d update request finish \n", updt_req_cnt);
 
         // transform the char type to int type, and calculate the operated chunks
         trnsfm_char_to_int(offset, offset_int);
@@ -158,8 +158,8 @@ int main(int argc, char** argv){
 
     printf("Trace: %s\n", argv[1]);
     baseline_read_trace(argv[1]);
-	
-	printf("Baseline: Trace-%s replay finishes\n", argv[1]);
+
+    printf("Baseline: Trace-%s replay finishes\n", argv[1]);
 
     return 0;
 }

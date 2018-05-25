@@ -2,7 +2,7 @@
 #define _CONFIG_H
 
 /* if the server to act as gateway switch is open */
-#define GTWY_OPEN             0
+#define GTWY_OPEN             1
 
 // ======================== Fill the erasure coding parameters ====================
 /* erasure coding settings */

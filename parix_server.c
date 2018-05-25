@@ -176,7 +176,7 @@ void parix_server_update(TRANSMIT_DATA* td){
 
         read_old_data(old_data, td->chunk_store_index);
         memcpy(td->buff, old_data, sizeof(char)*chunk_size);
-		
+
         para_send_dt_prty(td, PARIX_OLD, num_chunks_in_stripe-data_chunks, td->port_num, UPDT_ACK_PORT);
 
         free(old_data);
@@ -423,7 +423,7 @@ int main(int argc, char** argv){
     struct sockaddr_in sender_addr;
     socklen_t length=sizeof(sender_addr);
 
-	gateway_count=0;
+    gateway_count=0;
 
     while(1){
 
@@ -433,7 +433,7 @@ int main(int argc, char** argv){
             exit(1);
         }
 
-		memcpy(sender_ip, inet_ntoa(sender_addr.sin_addr), ip_len);
+        memcpy(sender_ip, inet_ntoa(sender_addr.sin_addr), ip_len);
         send_size=-1;
         recv_len=0;
 

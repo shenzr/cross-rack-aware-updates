@@ -114,13 +114,13 @@ void cau_server_updte(TRANSMIT_DATA* td){
         td->op_type=DATA_LOG;
         prty_node_id=td->updt_prty_nd_id[0];
         memcpy(td->sent_ip, node_ip_set[prty_node_id], ip_len);
-		memcpy(td->next_ip, td->sent_ip, ip_len);
+        memcpy(td->next_ip, td->sent_ip, ip_len);
 
-		if(GTWY_OPEN)
-			send_data(td, gateway_ip, td->port_num, NULL, NULL, UPDT_DATA);
+        if(GTWY_OPEN)
+            send_data(td, gateway_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
-		else 
-			send_data(td, td->sent_ip, td->port_num, NULL, NULL, UPDT_DATA);
+        else 
+            send_data(td, td->sent_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
         ACK_DATA* ack=(ACK_DATA*)malloc(sizeof(ACK_DATA));
         char* recv_buff=(char*)malloc(sizeof(ACK_DATA));
@@ -695,7 +695,7 @@ void cau_send_mvm_data(CMD_DATA* cmd){
     // if the gateway server is established, then send the cold data to the gateway
     // else, send the data to the metadata server
     memcpy(td->next_ip, mt_svr_ip, ip_len);
-	td->port_num=MVMT_PORT;
+    td->port_num=MVMT_PORT;
 
     if(GTWY_OPEN)
         send_data(td, gateway_ip, UPDT_PORT, NULL, NULL, UPDT_DATA);

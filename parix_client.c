@@ -120,7 +120,7 @@ void parix_read_trace(char *trace_name){
     int access_start_chunk, access_end_chunk;
     int access_chunk_num;
     int ret;
-	int updt_req_cnt;
+    int updt_req_cnt;
 
     META_INFO* metadata=(META_INFO*)malloc(sizeof(META_INFO));
 
@@ -131,7 +131,7 @@ void parix_read_trace(char *trace_name){
     b=0LL;
     offset_int=&a;
     size_int=&b;
-	updt_req_cnt=0;
+    updt_req_cnt=0;
 
     memset(mark_updt_stripes_tab, -1, sizeof(int)*(max_updt_strps+num_tlrt_strp)*(data_chunks+1));
     cross_rack_updt_traffic=0;
@@ -150,10 +150,10 @@ void parix_read_trace(char *trace_name){
         if((ret=strcmp(op_type, "Read"))==0)
             continue;
 
-		updt_req_cnt++;
+        updt_req_cnt++;
 
-		if(updt_req_cnt%500==0)
-			printf("%d update request finish \n", updt_req_cnt);
+        if(updt_req_cnt%500==0)
+            printf("%d update request finish \n", updt_req_cnt);
 
         trnsfm_char_to_int(offset, offset_int);
         trnsfm_char_to_int(size, size_int);
@@ -186,7 +186,7 @@ int main(int argc, char** argv){
     printf("Trace: %s\n", argv[1]);
     parix_read_trace(argv[1]);
 
-	printf("PARIX: Trace-%s replay finishes\n", argv[1]);
+    printf("PARIX: Trace-%s replay finishes\n", argv[1]);
 
     return 0;
 }

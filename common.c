@@ -1259,7 +1259,7 @@ void para_recv_ack(int stripe_id, int num_recv_chnks, int port_num){
         index++;
         if(index>=num_recv_chnks)
             break;
-		
+
     }
 
     for(i=0; i<num_recv_chnks; i++)
@@ -1337,8 +1337,8 @@ void para_send_dt_prty(TRANSMIT_DATA* td, int op_type, int num_updt_prty, int se
 
     }
 
-	// parallel receive data 
-	para_recv_ack(td->stripe_id, num_updt_prty, ack_port);
+    // parallel receive data 
+    para_recv_ack(td->stripe_id, num_updt_prty, ack_port);
 
     // join the threads
     for(j=0; j<num_updt_prty; j++)
@@ -1387,7 +1387,7 @@ void gateway_forward_updt_data(TRANSMIT_DATA* td, char* sender_ip){
 
     /* record the source ip address */
     memcpy(td->from_ip, sender_ip, ip_len);
-	
+
     send_data(td, td->next_ip, td->port_num, NULL, NULL, UPDT_DATA);
 
 }
