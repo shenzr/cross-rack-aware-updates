@@ -30,18 +30,26 @@ char* node_ip_set[total_nodes_num]={"192.168.10.53", "192.168.10.54", "192.168.1
 /* it records the inner ip address read from NIC */
 char* inner_ip_set[total_nodes_num]={"192.168.0.53", "192.168.0.54", "192.168.0.55", "192.168.0.56"}; 
 
+/* public ip of the metadata server */ 
 char* mt_svr_ip="192.168.10.52";
+
+/* public ip of the client */ 
 char* client_ip="192.168.10.51";
+
+/* default NIC */
 char* NIC="enp0s31f6";
 
-// if you would like to use a gateway server to simulate cross-rack transfers, then fill the gateway server
+/* public ip of the gateway server */ 
 char* gateway_ip="192.168.10.58"; 
+/* inner ip of the gateway server */
 char* gateway_local_ip="192.168.0.58";
 
 // =============== Fill the number of nodes in each rack in the evaluation ===========
 
-/* we currently consider all the regions have the same number of nodes */
+/* number of nodes in each rack */
 int   nodes_in_racks[rack_num]={node_num_per_rack, node_num_per_rack};
+
+/* rack names */ 
 char* region_name[rack_num]={"Rack 0", "Rack 1"};
 
 // ================================ END ===============================================

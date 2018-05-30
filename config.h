@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-/* if the server to act as gateway switch is open */
+/* if the server to act as gateway switch is opened */
 #define GTWY_OPEN             1
 
 // ======================== Fill the erasure coding parameters ====================
@@ -12,7 +12,7 @@
 
 // ======================== Fill the architecture parameters ====================
 
-/* configurations of data centers */
+/* configurations of the data center */
 #define total_nodes_num       4 //we set the number of chunks as the number of nodes in the local-cluster evaluation
 #define max_chunks_per_rack   2
 #define rack_num              2
