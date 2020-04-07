@@ -14,3 +14,5 @@ default:
 	$(CC) $(CFLAGS) -o baseline_mds baseline_mds.c $(Jerasure_dir)/galois.o $(Jerasure_dir)/reed_sol.o $(Jerasure_dir)/jerasure.o common.o
 	$(CC) $(CFLAGS) -o baseline_client baseline_client.c $(Jerasure_dir)/galois.o $(Jerasure_dir)/reed_sol.o $(Jerasure_dir)/jerasure.o common.o
 	$(CC) $(CFLAGS) -o gen_chunk_distribn gen_chunk_distribn.c $(Jerasure_dir)/galois.o $(Jerasure_dir)/reed_sol.o $(Jerasure_dir)/jerasure.o common.o
+clean:
+	rm common.o parix_client parix_mds parix_server cau_client cau_server cau_mds baseline_server baseline_mds baseline_client

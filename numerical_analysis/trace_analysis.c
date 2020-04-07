@@ -19,15 +19,15 @@
 #define m 4
 #define n 16
 #define node_num 16
-#define rack_num 4
+#define rack_num 8
 #define nodes_per_rack node_num/rack_num
+#define cau_log_strps 100
 
 #define cau_replica_num 1
 #define chunk_size 1024*1024
 #define stripe_num 5000000
 #define bucket_len 100000
 #define bucket_width 1000
-#define cau_log_strps 100
 #define strlen  100
 #define UPPBND  9999
 
@@ -48,8 +48,8 @@ int bucket[bucket_len*bucket_width];
 int cau_updt_tab[cau_log_strps*(k+1)]; //it records the updates in the logging stage
 int chunk_map[stripe_num*n];
 //int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
-//int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
-int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
+int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
+//int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
 
 
 void print_array(int row, int col, int *array){
@@ -58,56 +58,56 @@ void print_array(int row, int col, int *array){
 
   for(i=0; i<row; i++){
 
-	for(j=0; j<col; j++)
-		printf("%d ", array[i*col+j]);
+    for(j=0; j<col; j++)
+        printf("%d ", array[i*col+j]);
 
-	printf("\n");
+    printf("\n");
 
-  	}
+    }
 }
 
 int find_max_array_index(int* array, int num){
 
-	int i;
-	int ret=-1;
-	int index;
+    int i;
+    int ret=-1;
+    int index;
 
-	for(i=0; i<num; i++){
+    for(i=0; i<num; i++){
 
-		if(array[i]>ret){
-			ret=array[i];
-			index=i;
-			}
+        if(array[i]>ret){
+            ret=array[i];
+            index=i;
+            }
 
-		}
+        }
 
-	return index;
+    return index;
 }
 
 
 int find_none_zero_min_array_index(int* array, int num, int exception){
 
-	int i;
-	int ret=9999;
-	int index=-1;
-	int max_updt_freq=-1;
+    int i;
+    int ret=9999;
+    int index=-1;
+    int max_updt_freq=-1;
 
-	for(i=0; i<num; i++){
+    for(i=0; i<num; i++){
 
-		if(i==exception)
-			continue;
+        if(i==exception)
+            continue;
 
-		if(array[i]==0)
-			continue;
+        if(array[i]==0)
+            continue;
 
-		if(array[i]<ret){
-			ret=array[i];
-			index=i;
-			}
+        if(array[i]<ret){
+            ret=array[i];
+            index=i;
+            }
 
-		}
+        }
 
-	return index;
+    return index;
 }
 
 
@@ -136,59 +136,59 @@ int get_rack_id(int node_id){
 // sort the data access frequencies in descending order
 void quick_sort(int* data, int* index, int start_id, int end_id){
 
-	int left=start_id;
-	int right=end_id;
+    int left=start_id;
+    int right=end_id;
 
-	int p=start_id; //the point
+    int p=start_id; //the point
 
-	int guard=data[start_id];
-	int guard_id=index[start_id];
+    int guard=data[start_id];
+    int guard_id=index[start_id];
 
-	while(left<right){
+    while(left<right){
 
-		while(data[right]<=guard && right>p)
-			right--;
+        while(data[right]<=guard && right>p)
+            right--;
 
-		if(data[right]>guard){
+        if(data[right]>guard){
 
-			data[p]=data[right];
-			index[p]=index[right];
-			p=right;
-			
-			}
+            data[p]=data[right];
+            index[p]=index[right];
+            p=right;
+            
+            }
 
-		while(data[left]>=guard && left<p)
-			left++;
+        while(data[left]>=guard && left<p)
+            left++;
 
-		if(data[left]<guard){
+        if(data[left]<guard){
 
-			data[p]=data[left];
-			index[p]=index[left];
-			p=left;
-			
-			}
-		}
+            data[p]=data[left];
+            index[p]=index[left];
+            p=left;
+            
+            }
+        }
 
-	data[p]=guard;
-	index[p]=guard_id;
+    data[p]=guard;
+    index[p]=guard_id;
 
-	if(p-start_id>1)
-		quick_sort(data,index,start_id,p-1);
+    if(p-start_id>1)
+        quick_sort(data,index,start_id,p-1);
 
-	if(end_id-p>1)
-		quick_sort(data,index,p+1,end_id);
+    if(end_id-p>1)
+        quick_sort(data,index,p+1,end_id);
 
 }
 
 
 void nmrcl_pfrm_chnk_movmt(int in_chunk_id, int out_chunk_id){
 
-	//update chunk_map
-	int temp;
-	temp=chunk_map[in_chunk_id];
-	chunk_map[in_chunk_id]=chunk_map[out_chunk_id];
-	chunk_map[out_chunk_id]=temp;
-	
+    //update chunk_map
+    int temp;
+    temp=chunk_map[in_chunk_id];
+    chunk_map[in_chunk_id]=chunk_map[out_chunk_id];
+    chunk_map[out_chunk_id]=temp;
+    
 }
 
 //we assume that the data are separated for each commit 
@@ -226,209 +226,209 @@ void hot_cold_separation(){
   //sort each stripe 
   for(i=0; i<cau_log_strps; i++){
 
-	//printf("--stripe_id=%d\n", cau_updt_tab[i*(k+1)]);
+    //printf("--stripe_id=%d\n", cau_updt_tab[i*(k+1)]);
 
-	if(cau_updt_tab[i*(k+1)]==-1)
-		break;
+    if(cau_updt_tab[i*(k+1)]==-1)
+        break;
 
-	for(j=0; j<k; j++)
-		temp_dt_chnk_index[j]=j;
+    for(j=0; j<k; j++)
+        temp_dt_chnk_index[j]=j;
 
-	for(j=0; j<k; j++){
+    for(j=0; j<k; j++){
 
-		if(cau_updt_tab[i*(k+1)+j+1]>=0)
-			temp_dt_updt_freq_stripe[j]=1;
+        if(cau_updt_tab[i*(k+1)+j+1]>=0)
+            temp_dt_updt_freq_stripe[j]=1;
 
-		else 
-			temp_dt_updt_freq_stripe[j]=-1;
-		
-		}
+        else 
+            temp_dt_updt_freq_stripe[j]=-1;
+        
+        }
 
-	//sort the data chunks with their indices
-	quick_sort(temp_dt_updt_freq_stripe, temp_dt_chnk_index, 0, k-1);
+    //sort the data chunks with their indices
+    quick_sort(temp_dt_updt_freq_stripe, temp_dt_chnk_index, 0, k-1);
 
-	memset(rcd_rack_id, 0, sizeof(int)*rack_num);
-	memset(rack_prty_num, 0, sizeof(int)*rack_num);
+    memset(rcd_rack_id, 0, sizeof(int)*rack_num);
+    memset(rack_prty_num, 0, sizeof(int)*rack_num);
 
-	//find where the rack that has most updated chunks 
-	for(j=0; j<k; j++){
+    //find where the rack that has most updated chunks 
+    for(j=0; j<k; j++){
 
         //we only consider the chunks that are accessed
-		if(temp_dt_updt_freq_stripe[j]==-1)
-			break;
+        if(temp_dt_updt_freq_stripe[j]==-1)
+            break;
 
-		stripe_id=cau_updt_tab[i*(k+1)];
-		chunk_id=temp_dt_chnk_index[j];
-		node_id=chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j]];
+        stripe_id=cau_updt_tab[i*(k+1)];
+        chunk_id=temp_dt_chnk_index[j];
+        node_id=chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j]];
 
-		temp_rack_id=get_rack_id(node_id);
-		rcd_rack_id[temp_rack_id]++;
+        temp_rack_id=get_rack_id(node_id);
+        rcd_rack_id[temp_rack_id]++;
 
-		}
-	
-	//record the number of parity chunks in racks
-	for(l=0; l<m; l++){
-	
-		stripe_id=cau_updt_tab[i*(k+1)];
-		node_id=chunk_map[stripe_id*n+k+l];
-		prty_rack_id=get_rack_id(node_id); 
-	
-		rack_prty_num[prty_rack_id]++;
-	
-	}
+        }
+    
+    //record the number of parity chunks in racks
+    for(l=0; l<m; l++){
+    
+        stripe_id=cau_updt_tab[i*(k+1)];
+        node_id=chunk_map[stripe_id*n+k+l];
+        prty_rack_id=get_rack_id(node_id); 
+    
+        rack_prty_num[prty_rack_id]++;
+    
+    }
 
-	//locate the destine rack id that has the maximum number of update chunks
-	slct_rack=find_max_array_index(rcd_rack_id, rack_num);
-	cddt_rack_id=find_none_zero_min_array_index(rcd_rack_id, rack_num, slct_rack);
+    //locate the destine rack id that has the maximum number of update chunks
+    slct_rack=find_max_array_index(rcd_rack_id, rack_num);
+    cddt_rack_id=find_none_zero_min_array_index(rcd_rack_id, rack_num, slct_rack);
 
     //if there is only one rack with updated data 
-	if(cddt_rack_id==-1){
+    if(cddt_rack_id==-1){
 
         //if there are more than two chunks updated in the selected rack, then do not move
-		if(rcd_rack_id[slct_rack]>1)
-			continue;
-		
-		//we can place the single hot data chunk to the rack where there are most parity chunks 
-		max_prty_rack=find_max_array_index(rack_prty_num, rack_num);
+        if(rcd_rack_id[slct_rack]>1)
+            continue;
+        
+        //we can place the single hot data chunk to the rack where there are most parity chunks 
+        max_prty_rack=find_max_array_index(rack_prty_num, rack_num);
 
         //if the selected rack has parity chunks, then do not move 
-		if(rack_prty_num[slct_rack]>0)
-			continue;
+        if(rack_prty_num[slct_rack]>0)
+            continue;
 
-		//printf("max_prty_rack=%d\n", max_prty_rack);
+        //printf("max_prty_rack=%d\n", max_prty_rack);
 
         //locate the hot chunk
-		for(h=0; h<k; h++){
+        for(h=0; h<k; h++){
 
-			if(temp_dt_updt_freq_stripe[h]==1)
-				break;
-			
-			}
+            if(temp_dt_updt_freq_stripe[h]==1)
+                break;
+            
+            }
 
-		in_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
+        in_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
 
         //find a cold chunk in max_prty_rack
-		for(h=0; h<k; h++){
+        for(h=0; h<k; h++){
 
-			if(temp_dt_updt_freq_stripe[h]==1)
-				continue;
+            if(temp_dt_updt_freq_stripe[h]==1)
+                continue;
 
-			temp_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h]]);
+            temp_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h]]);
 
-			if(temp_rack_id==max_prty_rack){
+            if(temp_rack_id==max_prty_rack){
 
-				out_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
-				
-				nmrcl_pfrm_chnk_movmt(in_chunk_id, out_chunk_id);
-				cau_hdg_traffic+=2;
-				cau_sum_cross_traffic+=2;
-				incre_crs_trfic+=2;
+                out_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
+                
+                nmrcl_pfrm_chnk_movmt(in_chunk_id, out_chunk_id);
+                cau_hdg_traffic+=2;
+                cau_sum_cross_traffic+=2;
+                incre_crs_trfic+=2;
 
-				break;
+                break;
 
-				}
+                }
 
-			}
+            }
 
-		continue;
+        continue;
 
-		}
-	
-	//perform separation for the racks with max and min number of update chunks 
-	if(cddt_rack_id!=slct_rack){
+        }
+    
+    //perform separation for the racks with max and min number of update chunks 
+    if(cddt_rack_id!=slct_rack){
 
         // we prefer the two racks that can group all their stored hot data chunks within a rack
-		if(rcd_rack_id[cddt_rack_id]+rcd_rack_id[slct_rack]>nodes_per_rack-rack_prty_num[slct_rack])
-			continue;
+        if(rcd_rack_id[cddt_rack_id]+rcd_rack_id[slct_rack]>nodes_per_rack-rack_prty_num[slct_rack])
+            continue;
 
-		orig_cmmt_cost=0;
-		new_cmmt_cost=0;
+        orig_cmmt_cost=0;
+        new_cmmt_cost=0;
 
-		//the cost of committing the hot data chunks in the rack temp_rack_id before movement
-		for(h=0; h<rack_num; h++){
+        //the cost of committing the hot data chunks in the rack temp_rack_id before movement
+        for(h=0; h<rack_num; h++){
 
-			if(h==cddt_rack_id)
-				continue;
+            if(h==cddt_rack_id)
+                continue;
 
-			if(rcd_rack_id[cddt_rack_id]<rack_prty_num[h])
-					orig_cmmt_cost+=rcd_rack_id[cddt_rack_id];
+            if(rcd_rack_id[cddt_rack_id]<rack_prty_num[h])
+                    orig_cmmt_cost+=rcd_rack_id[cddt_rack_id];
 
-			else 
-				orig_cmmt_cost+=rack_prty_num[h];
+            else 
+                orig_cmmt_cost+=rack_prty_num[h];
 
-			}
+            }
 
-		//the cost of committing the hot data chunks in the rack slct_rack_id before movement
-		for(h=0; h<rack_num; h++){
+        //the cost of committing the hot data chunks in the rack slct_rack_id before movement
+        for(h=0; h<rack_num; h++){
 
-			if(h==slct_rack)
-				continue;
+            if(h==slct_rack)
+                continue;
 
-			if(rcd_rack_id[slct_rack]<rack_prty_num[h])
-				orig_cmmt_cost+=rcd_rack_id[slct_rack];
+            if(rcd_rack_id[slct_rack]<rack_prty_num[h])
+                orig_cmmt_cost+=rcd_rack_id[slct_rack];
 
-			else 
-				orig_cmmt_cost+=rack_prty_num[h];
+            else 
+                orig_cmmt_cost+=rack_prty_num[h];
 
-			}
+            }
 
         //the cost after movement
-		for(h=0; h<rack_num; h++){
+        for(h=0; h<rack_num; h++){
 
-			if(h==slct_rack)
-				continue;
+            if(h==slct_rack)
+                continue;
 
-			if(rcd_rack_id[slct_rack]+rcd_rack_id[cddt_rack_id]<rack_prty_num[h])
-				new_cmmt_cost+=rcd_rack_id[slct_rack]+rcd_rack_id[cddt_rack_id];
+            if(rcd_rack_id[slct_rack]+rcd_rack_id[cddt_rack_id]<rack_prty_num[h])
+                new_cmmt_cost+=rcd_rack_id[slct_rack]+rcd_rack_id[cddt_rack_id];
 
-			else 
-				new_cmmt_cost+=rack_prty_num[h];
+            else 
+                new_cmmt_cost+=rack_prty_num[h];
 
-			}
+            }
 
-		if(new_cmmt_cost > orig_cmmt_cost-2*rcd_rack_id[cddt_rack_id])
-			continue;
+        if(new_cmmt_cost > orig_cmmt_cost-2*rcd_rack_id[cddt_rack_id])
+            continue;
 
-		//select a cold chunk from this rack and perform switch
-		for(j=0; j<k; j++){
+        //select a cold chunk from this rack and perform switch
+        for(j=0; j<k; j++){
 
-			if(temp_dt_updt_freq_stripe[j]==-1)
-				break;
+            if(temp_dt_updt_freq_stripe[j]==-1)
+                break;
 
-			its_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j]]);
+            its_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j]]);
 
-			if(its_rack_id!=cddt_rack_id)
-				continue;
-			
-			for(h=0; h<k; h++){
+            if(its_rack_id!=cddt_rack_id)
+                continue;
+            
+            for(h=0; h<k; h++){
 
-            	//we only move the chunks that are not updated 
-				if(temp_dt_updt_freq_stripe[h]==1) 
-					continue;
+                //we only move the chunks that are not updated 
+                if(temp_dt_updt_freq_stripe[h]==1) 
+                    continue;
 
-				//printf("temp_index[k]=%d\n",temp_index[k]);
-				temp_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h]]);
+                //printf("temp_index[k]=%d\n",temp_index[k]);
+                temp_rack_id=get_rack_id(chunk_map[cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h]]);
 
-				if(temp_rack_id==slct_rack){
+                if(temp_rack_id==slct_rack){
 
-					in_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j];
-					out_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
+                    in_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[j];
+                    out_chunk_id=cau_updt_tab[i*(k+1)]*n+temp_dt_chnk_index[h];
 
-					out_chnk_nd_id=chunk_map[out_chunk_id];
-					in_chnk_nd_id=chunk_map[in_chunk_id];
-					
-					nmrcl_pfrm_chnk_movmt(in_chunk_id, out_chunk_id);
-					cau_sum_cross_traffic+=2;
-					cau_hdg_traffic+=2;
-					incre_crs_trfic+=2;
+                    out_chnk_nd_id=chunk_map[out_chunk_id];
+                    in_chnk_nd_id=chunk_map[in_chunk_id];
+                    
+                    nmrcl_pfrm_chnk_movmt(in_chunk_id, out_chunk_id);
+                    cau_sum_cross_traffic+=2;
+                    cau_hdg_traffic+=2;
+                    incre_crs_trfic+=2;
 
-					break;
-					
-				}
-			  }
-		   }
-		}
-	}
+                    break;
+                    
+                }
+              }
+           }
+        }
+    }
 
   //printf("data_separation completes, incre_crs_trfic=%d\n", incre_crs_trfic);
   
@@ -438,47 +438,47 @@ void hot_cold_separation(){
 //this function is to read the mapping information from disk and keep it in the memory 
 void read_numercial_chunk_map(char* map_file){
 
-	int j;
-	char strline[strlen];
-	int index;
-	int stripe_id;
-	int temp;
+    int j;
+    char strline[strlen];
+    int index;
+    int stripe_id;
+    int temp;
 
-	memset(chunk_map, -1, sizeof(int)*stripe_num*n);
+    memset(chunk_map, -1, sizeof(int)*stripe_num*n);
 
-	FILE *fd=fopen(map_file, "r");
-	if(fd==NULL)
-		perror("Error");
+    FILE *fd=fopen(map_file, "r");
+    if(fd==NULL)
+        perror("Error");
 
     stripe_id=0;
-	temp=0;
-	while(fgets(strline, strlen, fd)!=NULL){
+    temp=0;
+    while(fgets(strline, strlen, fd)!=NULL){
 
-	  //printf("%s",strline);
-	  index=0;
+      //printf("%s",strline);
+      index=0;
 
-	  for(j=0; j<strlen; j++){
+      for(j=0; j<strlen; j++){
 
-		if(strline[j]=='\0')
-			break;
+        if(strline[j]=='\0')
+            break;
 
-		if(strline[j]>='0' && strline[j]<='9')
-			temp=temp*10+strline[j]-'0';
+        if(strline[j]>='0' && strline[j]<='9')
+            temp=temp*10+strline[j]-'0';
 
-		if(strline[j]==' '){
-			chunk_map[stripe_id*n+index]=temp;
-			//printf("global_chunk_map[%d][%d]=%d\n", stripe_id, index, chunk_map[stripe_id*n+index]);
-			temp=0;
-			index++;
-			}
-		}
-	  
-	  stripe_id++;
-	}
+        if(strline[j]==' '){
+            chunk_map[stripe_id*n+index]=temp;
+            //printf("global_chunk_map[%d][%d]=%d\n", stripe_id, index, chunk_map[stripe_id*n+index]);
+            temp=0;
+            index++;
+            }
+        }
+      
+      stripe_id++;
+    }
 
-	fclose(fd);
+    fclose(fd);
 
-	//print_array(stripe_num, n, chunk_map);
+    //print_array(stripe_num, n, chunk_map);
 }
 
 
@@ -533,73 +533,73 @@ void new_strtok(char string[], char divider, char result[]){
 int pl_cross_traffic(int start_chunk, int end_chunk){
 
     int i;
-	int j;
-	int stripe_id;
-	int chunk_id;
-	int rack_id;
-	int node_id;
-	int prty_rack_id;
-	int sum; 
+    int j;
+    int stripe_id;
+    int chunk_id;
+    int rack_id;
+    int node_id;
+    int prty_rack_id;
+    int sum; 
 
-	sum=0;
-	//for each updated chunk, locate its rack_id and the rack_ids of m parity chunks
-	for(i=start_chunk; i<=end_chunk; i++){
+    sum=0;
+    //for each updated chunk, locate its rack_id and the rack_ids of m parity chunks
+    for(i=start_chunk; i<=end_chunk; i++){
 
-		stripe_id=i/k;
-		chunk_id=i%k;
-		node_id=chunk_map[stripe_id*n+chunk_id];
-		rack_id=get_rack_id(node_id);
+        stripe_id=i/k;
+        chunk_id=i%k;
+        node_id=chunk_map[stripe_id*n+chunk_id];
+        rack_id=get_rack_id(node_id);
 
-		//printf("data chunk: stripe_id=%d, data_chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
-		//locate the rack_ids of parity chunks 
-		for(j=0; j<m; j++){
+        //printf("data chunk: stripe_id=%d, data_chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
+        //locate the rack_ids of parity chunks 
+        for(j=0; j<m; j++){
 
-			node_id=chunk_map[stripe_id*n+k+j];
-			prty_rack_id=get_rack_id(node_id);
-			//printf("parity chunk: parity_chunk_id=%d, prty_node_id=%d, prty_rack_id=%d\n", k+j, node_id, prty_rack_id);
+            node_id=chunk_map[stripe_id*n+k+j];
+            prty_rack_id=get_rack_id(node_id);
+            //printf("parity chunk: parity_chunk_id=%d, prty_node_id=%d, prty_rack_id=%d\n", k+j, node_id, prty_rack_id);
 
-			if(rack_id!=prty_rack_id)
-				sum++;
+            if(rack_id!=prty_rack_id)
+                sum++;
 
-			}
+            }
 
-		//printf("sum=%d\n",sum);
-		}
-	
-	return sum;
+        //printf("sum=%d\n",sum);
+        }
+    
+    return sum;
 
 }
 
 
 int check_if_first_updt(int chunk_id){
 
-	int bucket_id;
-	int i;
-	int flag;
+    int bucket_id;
+    int i;
+    int flag;
 
-	bucket_id=chunk_id%bucket_len;
+    bucket_id=chunk_id%bucket_len;
 
-	for(i=0; i<bucket_width; i++){
-		if(bucket[i*bucket_len+bucket_id]==chunk_id){
-			flag=0;
-			break;
-			}
-		else if(bucket[i*bucket_len+bucket_id]==-1){
-			flag=1;
-			break;
-			}
-		}
+    for(i=0; i<bucket_width; i++){
+        if(bucket[i*bucket_len+bucket_id]==chunk_id){
+            flag=0;
+            break;
+            }
+        else if(bucket[i*bucket_len+bucket_id]==-1){
+            flag=1;
+            break;
+            }
+        }
 
-	if(i>=bucket_width){
-		printf("ERR: bucket is full!\n");
-		exit(1);
-		}
+    if(i>=bucket_width){
+        printf("ERR: bucket is full!\n");
+        exit(1);
+        }
 
     //if it is a new chunk, then record it
-	if(flag==1)
-		bucket[i*bucket_len+bucket_id]=chunk_id;
+    if(flag==1)
+        bucket[i*bucket_len+bucket_id]=chunk_id;
 
-	return flag;
+    return flag;
 
 }
 
@@ -608,128 +608,128 @@ int check_if_first_updt(int chunk_id){
 int parix(int start_chunk, int end_chunk){
 
     int i;
-	int j;
-	int stripe_id;
-	int chunk_id;
-	int rack_id;
-	int node_id;
-	int prty_rack_id;
-	int sum; 
-	int if_first_updt;
-	int temp_sum;
+    int j;
+    int stripe_id;
+    int chunk_id;
+    int rack_id;
+    int node_id;
+    int prty_rack_id;
+    int sum; 
+    int if_first_updt;
+    int temp_sum;
 
-	sum=0;
-	for(i=start_chunk; i<=end_chunk; i++){
+    sum=0;
+    for(i=start_chunk; i<=end_chunk; i++){
 
-		stripe_id=i/k;
-		chunk_id=i%k;
-		node_id=chunk_map[stripe_id*n+chunk_id];
-		rack_id=get_rack_id(node_id);
+        stripe_id=i/k;
+        chunk_id=i%k;
+        node_id=chunk_map[stripe_id*n+chunk_id];
+        rack_id=get_rack_id(node_id);
 
-		//printf("stripe_id=%d, chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
-		//locate the rack_id of parity chunks
-		temp_sum=0;
-		for(j=0; j<m; j++){
+        //printf("stripe_id=%d, chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
+        //locate the rack_id of parity chunks
+        temp_sum=0;
+        for(j=0; j<m; j++){
 
-			node_id=chunk_map[stripe_id*n+k+j];
-			prty_rack_id=get_rack_id(node_id);
+            node_id=chunk_map[stripe_id*n+k+j];
+            prty_rack_id=get_rack_id(node_id);
 
-			if(rack_id!=prty_rack_id)
-				temp_sum++;
-			
-			}
+            if(rack_id!=prty_rack_id)
+                temp_sum++;
+            
+            }
 
-		sum+=temp_sum;
+        sum+=temp_sum;
 
-		//check if the chunk is udpated for the first time
-		if_first_updt=check_if_first_updt(i);
+        //check if the chunk is udpated for the first time
+        if_first_updt=check_if_first_updt(i);
 
         //if it is updated for the first time, the old version should be kept in the parity chunks
-		if(if_first_updt==1)
-			sum+=temp_sum;
-		
-		}
+        if(if_first_updt==1)
+            sum+=temp_sum;
+        
+        }
 
-	return sum;
+    return sum;
 
 }
 
 
 int cau_commit(int if_end_trace){
 
-	 int h;
-	 int l,p;
-	 int stripe_id;
-	 int node_id;
-	 int prty_rack_id;
-	 int rack_id;
-	 int sum;
-	 int if_rack_updt[rack_num];
-	 int rack_prty_num[rack_num];
+     int h;
+     int l,p;
+     int stripe_id;
+     int node_id;
+     int prty_rack_id;
+     int rack_id;
+     int sum;
+     int if_rack_updt[rack_num];
+     int rack_prty_num[rack_num];
 
-	 sum=0;
+     sum=0;
 
-	 //for each logged stripe, determine the rack of each updated chunk
-	 for(h=0; h<cau_log_strps; h++){
+     //for each logged stripe, determine the rack of each updated chunk
+     for(h=0; h<cau_log_strps; h++){
 
            //in the commit when the trace is finished, the number of logged stripes may be less than cau_log_strps
-		if(cau_updt_tab[h*(k+1)]==-1)
-			break;
+        if(cau_updt_tab[h*(k+1)]==-1)
+            break;
 
-		memset(if_rack_updt, 0, sizeof(int)*rack_num);
-		memset(rack_prty_num, 0, sizeof(int)*rack_num);
+        memset(if_rack_updt, 0, sizeof(int)*rack_num);
+        memset(rack_prty_num, 0, sizeof(int)*rack_num);
 
         //record the number of updated chunks in racks
-		for(l=0; l<k; l++){
+        for(l=0; l<k; l++){
 
-			if(cau_updt_tab[h*(k+1)+l+1]>=0){
+            if(cau_updt_tab[h*(k+1)+l+1]>=0){
 
-				stripe_id=cau_updt_tab[h*(k+1)];
-				node_id=chunk_map[stripe_id*n+l];
-				rack_id=get_rack_id(node_id);
+                stripe_id=cau_updt_tab[h*(k+1)];
+                node_id=chunk_map[stripe_id*n+l];
+                rack_id=get_rack_id(node_id);
 
-				if_rack_updt[rack_id]++;
-						
-				}
-			}
+                if_rack_updt[rack_id]++;
+                        
+                }
+            }
 
-		//record the number of parity chunks in racks
-			for(l=0; l<m; l++){
+        //record the number of parity chunks in racks
+            for(l=0; l<m; l++){
 
-				stripe_id=cau_updt_tab[h*(k+1)];
-				node_id=chunk_map[stripe_id*n+k+l];
-				prty_rack_id=get_rack_id(node_id); 
+                stripe_id=cau_updt_tab[h*(k+1)];
+                node_id=chunk_map[stripe_id*n+k+l];
+                prty_rack_id=get_rack_id(node_id); 
 
-				rack_prty_num[prty_rack_id]++;
+                rack_prty_num[prty_rack_id]++;
 
-				}
-			
-			//if direct commit and selective commit
-			for(l=0; l<rack_num; l++){
-				for(p=0; p<rack_num; p++){
+                }
+            
+            //if direct commit and selective commit
+            for(l=0; l<rack_num; l++){
+                for(p=0; p<rack_num; p++){
 
-					if(p==l)
-						continue;
+                    if(p==l)
+                        continue;
 
                     //if direct commit
-					if(commit_approach==1)
-						sum+=if_rack_updt[l]*rack_prty_num[p];
+                    if(commit_approach==1)
+                        sum+=if_rack_updt[l]*rack_prty_num[p];
 
                     //if selective commit
                     else if(commit_approach==2 || commit_approach==3){
-						
-						if(if_rack_updt[l]<rack_prty_num[p])
-							sum+=if_rack_updt[l];
-						
-						else 
-							sum+=rack_prty_num[p];
-                    	}
-					}
-				}
-			}
+                        
+                        if(if_rack_updt[l]<rack_prty_num[p])
+                            sum+=if_rack_updt[l];
+                        
+                        else 
+                            sum+=rack_prty_num[p];
+                        }
+                    }
+                }
+            }
 
 
-	 return sum;
+     return sum;
 
 }
 
@@ -745,93 +745,93 @@ void cau_cross_traffic(int start_chunk, int end_chunk, int if_end_trace){
     int node_id;
     int prty_rack_id;
     int sum_direct_cmmt, sum_selective_cmmt; 
-	int sum_hot_grouping;
+    int sum_hot_grouping;
     int if_first_updt;
-	int h;
-	int l;
-	int p;
-	int log_prty_id;
-	int log_prty_rack_id;
+    int h;
+    int l;
+    int p;
+    int log_prty_id;
+    int log_prty_rack_id;
     int index;
-	int its_prty_nd_id;
-	int its_rack_id;
-	int sum;
-	int temp_sum;
+    int its_prty_nd_id;
+    int its_rack_id;
+    int sum;
+    int temp_sum;
 
-	sum=0;
+    sum=0;
     sum_direct_cmmt=0;
-	sum_selective_cmmt=0;
-	sum_hot_grouping=0;
+    sum_selective_cmmt=0;
+    sum_hot_grouping=0;
 
-	j=-1;
+    j=-1;
 
-	if(start_chunk==-1){
-		
-		temp_sum=cau_commit(if_end_trace);
-		sum+=temp_sum;
-		cau_spu_traffic+=temp_sum;
-		cau_sum_cross_traffic+=temp_sum;
-		
-		}
+    if(start_chunk==-1){
+        
+        temp_sum=cau_commit(if_end_trace);
+        sum+=temp_sum;
+        cau_spu_traffic+=temp_sum;
+        cau_sum_cross_traffic+=temp_sum;
+        
+        }
 
-	for(i=start_chunk; i<=end_chunk; i++){
+    for(i=start_chunk; i<=end_chunk; i++){
 
-		stripe_id=i/k;
-		chunk_id=i%k; 
-		node_id=chunk_map[stripe_id*n+chunk_id];
-		rack_id=get_rack_id(node_id);
+        stripe_id=i/k;
+        chunk_id=i%k; 
+        node_id=chunk_map[stripe_id*n+chunk_id];
+        rack_id=get_rack_id(node_id);
 
-		if(stripe_id>stripe_num){
+        if(stripe_id>stripe_num){
 
-			printf("stripe num is too small, stripe_id=%d, stripe_num=%d\n", stripe_id, stripe_num);
-			exit(1);
+            printf("stripe num is too small, stripe_id=%d, stripe_num=%d\n", stripe_id, stripe_num);
+            exit(1);
 
-			}
+            }
 
-		//printf("data_chunk: stripe_id=%d, chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
-		for(j=0; j<cau_log_strps; j++){
+        //printf("data_chunk: stripe_id=%d, chunk_id=%d, node_id=%d, rack_id=%d\n", stripe_id, chunk_id, node_id, rack_id);
+        for(j=0; j<cau_log_strps; j++){
 
             //if the stripe has been updated, then mark the chunk_id
-			if(cau_updt_tab[j*(k+1)]==stripe_id){
-				
-				cau_updt_tab[j*(k+1)+chunk_id+1]++;
-				break;
-				
-				}
+            if(cau_updt_tab[j*(k+1)]==stripe_id){
+                
+                cau_updt_tab[j*(k+1)+chunk_id+1]++;
+                break;
+                
+                }
 
             //if the stripe has not been recorded, then record it
-			if(cau_updt_tab[j*(k+1)]==-1){
-				
-				cau_updt_tab[j*(k+1)]=stripe_id;
-				cau_updt_tab[j*(k+1)+chunk_id+1]++;
-				break;
+            if(cau_updt_tab[j*(k+1)]==-1){
+                
+                cau_updt_tab[j*(k+1)]=stripe_id;
+                cau_updt_tab[j*(k+1)+chunk_id+1]++;
+                break;
 
-				}
-			}
+                }
+            }
 
         // if we keep a replica for each update
         if(cau_replica_num>0){
-			cau_replica_traffic+=cau_replica_num;
-			cau_sum_cross_traffic+=cau_replica_num;
-        	}
+            cau_replica_traffic+=cau_replica_num;
+            cau_sum_cross_traffic+=cau_replica_num;
+            }
 
-		//if the table is full or the trace is finished, then commit the parity deltas
-		if(j>=cau_log_strps){
+        //if the table is full or the trace is finished, then commit the parity deltas
+        if(j>=cau_log_strps){
 
-		    temp_sum=cau_commit(if_end_trace);
-			cau_spu_traffic+=temp_sum;
-			cau_sum_cross_traffic+=temp_sum;
+            temp_sum=cau_commit(if_end_trace);
+            cau_spu_traffic+=temp_sum;
+            cau_sum_cross_traffic+=temp_sum;
 
-			//if it is not the end of the trace, then perform separation
-			if(commit_approach==3 && if_end_trace!=1)
-				hot_cold_separation();
+            //if it is not the end of the trace, then perform separation
+            if(commit_approach==3 && if_end_trace!=1)
+                hot_cold_separation();
 
-			//reset the default setting after commit
-			memset(cau_updt_tab, -1, sizeof(int)*cau_log_strps*(k+1));
-			
-			}
+            //reset the default setting after commit
+            memset(cau_updt_tab, -1, sizeof(int)*cau_log_strps*(k+1));
+            
+            }
 
-		}
+        }
    
 }
 
@@ -840,28 +840,28 @@ void cau_cross_traffic(int start_chunk, int end_chunk, int if_end_trace){
 void trace_analysis_process(char* trace_name, int update_scheme){
 
     //read the chunk_map
-	if(n==9)
-	   read_numercial_chunk_map("cau_chunk_map_n9k6");
-	
-	else if(n==14)
-	   read_numercial_chunk_map("cau_chunk_map_n14k10");
-	
-	else if(n==16)
-	   read_numercial_chunk_map("cau_chunk_map_n16k12");
+    if(n==9)
+       read_numercial_chunk_map("cau_chunk_map_n9k6");
+    
+    else if(n==14)
+       read_numercial_chunk_map("cau_chunk_map_n14k10");
+    
+    else if(n==16)
+       read_numercial_chunk_map("cau_chunk_map_n16k12");
 
-	else if(n==17 && k==13)
-	   read_numercial_chunk_map("cau_chunk_map_n17k13");
-	
-	else if(n==18 && k==14)
-	   read_numercial_chunk_map("cau_chunk_map_n18k14");
+    else if(n==17 && k==13)
+       read_numercial_chunk_map("cau_chunk_map_n17k13");
+    
+    else if(n==18 && k==14)
+       read_numercial_chunk_map("cau_chunk_map_n18k14");
 
-	else if(n==19 && k==15)
-	   read_numercial_chunk_map("cau_chunk_map_n19k15");
+    else if(n==19 && k==15)
+       read_numercial_chunk_map("cau_chunk_map_n19k15");
 
-	else if(n==20 && k==16)
-	   read_numercial_chunk_map("cau_chunk_map_n20k16");
+    else if(n==20 && k==16)
+       read_numercial_chunk_map("cau_chunk_map_n20k16");
 
-	else printf("ERR: read_chunk_map!\n");
+    else printf("ERR: read_chunk_map!\n");
 
     //read the data from csv file
     FILE *fp;
@@ -872,22 +872,22 @@ void trace_analysis_process(char* trace_name, int update_scheme){
     }
 
     char operation[150];
-	char time_stamp[50];
-	char workload_name[10];
-	char volumn_id[5];
+    char time_stamp[50];
+    char workload_name[10];
+    char volumn_id[5];
     char op_type[10];
     char offset[20];
     char size[10];
-	char usetime[10];
+    char usetime[10];
     char divider=',';
 
     int i;
     int op_size;
     int ret;
-	int access_start_stripe, access_end_stripe;
-	int access_start_chunk, access_end_chunk;
-	int num_chunks_updated;
-	int read_count;
+    int access_start_stripe, access_end_stripe;
+    int access_start_chunk, access_end_chunk;
+    int num_chunks_updated;
+    int read_count;
 
     long long *size_int;
     long long *offset_int;
@@ -897,38 +897,38 @@ void trace_analysis_process(char* trace_name, int update_scheme){
     offset_int=&a;
     size_int=&b;
 
-	read_count=0;
-	write_count=0;
-	
-	pl_sum_cross_traffic=0;
-	parix_sum_cross_traffic=0;
-	cau_sum_cross_traffic=0;
+    read_count=0;
+    write_count=0;
+    
+    pl_sum_cross_traffic=0;
+    parix_sum_cross_traffic=0;
+    cau_sum_cross_traffic=0;
 
-	cau_replica_traffic=0;
-	cau_spu_traffic=0;
-	cau_hdg_traffic=0;
+    cau_replica_traffic=0;
+    cau_spu_traffic=0;
+    cau_hdg_traffic=0;
 
     struct timeval bg_tm, ed_tm; 
 
-	num_chunks_updated=0;
-	
+    num_chunks_updated=0;
+    
     while(fgets(operation, sizeof(operation), fp)) {
-		
+        
         new_strtok(operation,divider,time_stamp);
         new_strtok(operation,divider,workload_name);
-		new_strtok(operation,divider,volumn_id);
-		new_strtok(operation,divider,op_type);
-		new_strtok(operation,divider,offset);
+        new_strtok(operation,divider,volumn_id);
+        new_strtok(operation,divider,op_type);
+        new_strtok(operation,divider,offset);
         new_strtok(operation,divider, size);
-		new_strtok(operation,divider,usetime);
+        new_strtok(operation,divider,usetime);
 
         if(strcmp(op_type, "Read")==0){
-			read_count++;
-			continue;
-        	}
+            read_count++;
+            continue;
+            }
 
-		else if(strcmp(op_type, "Write")==0)
-			write_count++;
+        else if(strcmp(op_type, "Write")==0)
+            write_count++;
 
         trnsfm_char_to_int(offset, offset_int);
         trnsfm_char_to_int(size, size_int);
@@ -939,44 +939,47 @@ void trace_analysis_process(char* trace_name, int update_scheme){
         access_start_stripe=access_start_chunk/k;
         access_end_stripe=access_end_chunk/k;
 
-		num_chunks_updated+=access_end_chunk-access_start_chunk+1;
+        num_chunks_updated+=access_end_chunk-access_start_chunk+1;
 
-		if(access_end_stripe>stripe_num){
+        if(access_end_stripe>stripe_num){
 
-			printf("ERR: stripe_num too small!, access_end_stripe=%d\n", access_end_stripe);
-			exit(1);
+            printf("ERR: stripe_num too small!, access_end_stripe=%d\n", access_end_stripe);
+            exit(1);
 
-			}
+            }
 
-		if(update_scheme==run_baseline)
-			pl_sum_cross_traffic += pl_cross_traffic(access_start_chunk, access_end_chunk);
+        if(update_scheme==run_baseline)
+            pl_sum_cross_traffic += pl_cross_traffic(access_start_chunk, access_end_chunk);
 
-		else if(update_scheme == run_dl)
-			parix_sum_cross_traffic += parix(access_start_chunk, access_end_chunk);
+        else if(update_scheme == run_dl)
+            parix_sum_cross_traffic += parix(access_start_chunk, access_end_chunk);
 
-		else cau_cross_traffic(access_start_chunk, access_end_chunk, 0);
-		
+        else cau_cross_traffic(access_start_chunk, access_end_chunk, 0);
+        
 
     }
 
-	//printf("write_count=%d, ", write_count);
+    //printf("write_count=%d, ", write_count);
 
-	//in the end of the trace, cau will also commit the deltas 
-	if(update_scheme==run_cau)
-		cau_cross_traffic(-1, -1, 1);
+    //in the end of the trace, cau will also commit the deltas 
+    if(update_scheme==run_cau)
+        cau_cross_traffic(-1, -1, 1);
 
-	if(update_scheme==run_baseline)
-		printf("baseline_sum_cross_traffic=%d\n", pl_sum_cross_traffic);
+    if(update_scheme==run_baseline)
+        printf("%d\n", pl_sum_cross_traffic);
 
-	else if(update_scheme==run_dl)
-		printf("parix_sum_cross_traffic=%d\n", parix_sum_cross_traffic);
+    else if(update_scheme==run_dl)
+        printf("%d\n", parix_sum_cross_traffic);
 
-	else if (update_scheme==run_cau)
-		printf("cau_sum_cross_traffic=%d\n", cau_sum_cross_traffic);
+    else if (update_scheme==run_cau){
+        printf("%d\n", cau_sum_cross_traffic);
+        //printf("cau_replica_traffic=%d\n", cau_replica_traffic);
+        //printf("cau_hdg_traffic=%d\n", cau_hdg_traffic);
+    }
 
-	//printf("%d\n", cau_spu_traffic + cau_hdg_traffic);
-	
-	//printf("Trace: %s, pl_sum_cross_traffic=%d, parix_sum_cross_traffic=%d, cau_sum_cross_traffic=%d\n", trace_name, pl_sum_cross_traffic, parix_sum_cross_traffic, cau_sum_cross_traffic);
+    //printf("%d\n", cau_spu_traffic + cau_hdg_traffic);
+    
+    //printf("Trace: %s, pl_sum_cross_traffic=%d, parix_sum_cross_traffic=%d, cau_sum_cross_traffic=%d\n", trace_name, pl_sum_cross_traffic, parix_sum_cross_traffic, cau_sum_cross_traffic);
 
     fclose(fp);
 
@@ -991,25 +994,26 @@ int main(int argc, char** argv){
     }
 
     commit_approach = atoi(argv[2]);
-    printf("commit_approach = %d\n", commit_approach);
+    //printf("commit_approach = %d\n", commit_approach);
 
-    if(commit_approach==1)
-        printf("Append Direct Commit\n");
+    //if(commit_approach==1)
+    //    printf("Append Direct Commit\n");
 
-    else if(commit_approach==2)
-        printf("Selective Commit\n");
+    //else if(commit_approach==2)
+    //    printf("Selective Commit\n");
 
-    else if(commit_approach==3)
-   	    printf("Selective Commit plus Hot Grouping\n");
+    //else if(commit_approach==3)
+    //    printf("Selective Commit plus Hot Grouping\n");
 
-    else {
-        printf("input error!\n");
-        exit(1);
-    }
+    //else {
+    //    printf("input error!\n");
+    //    exit(1);
+    //}
 
    memset(bucket, -1, sizeof(int)*bucket_len*bucket_width);
    memset(cau_updt_tab, -1, sizeof(int)*cau_log_strps*(k+1));
 
+   printf("\n===== %s ======\n", argv[1]);
    trace_analysis_process(argv[1], run_baseline);
    trace_analysis_process(argv[1],run_dl);
    trace_analysis_process(argv[1],run_cau);

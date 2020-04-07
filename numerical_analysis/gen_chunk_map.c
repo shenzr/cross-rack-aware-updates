@@ -16,10 +16,10 @@
 #include <arpa/inet.h>
 
 #define k 12
-#define m 5
-#define n 17
-#define node_num 20
-#define rack_num 5
+#define m 4
+#define n 16
+#define node_num 16
+#define rack_num 8
 #define stripe_num 1000000
 
 int chunk_map[stripe_num*n];
