@@ -19,7 +19,7 @@
 #define m 4
 #define n 16
 #define node_num 16
-#define rack_num 8
+#define rack_num 4
 #define stripe_num 1000000
 
 int chunk_map[stripe_num*n];

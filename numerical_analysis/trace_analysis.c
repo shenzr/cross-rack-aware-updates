@@ -19,9 +19,9 @@
 #define m 4
 #define n 16
 #define node_num 16
-#define rack_num 8
+#define rack_num 4
 #define nodes_per_rack node_num/rack_num
-#define cau_log_strps 100
+#define cau_log_strps 2
 
 #define cau_replica_num 1
 #define chunk_size 1024*1024
@@ -47,8 +47,8 @@ int cau_hdg_traffic;
 int bucket[bucket_len*bucket_width];
 int cau_updt_tab[cau_log_strps*(k+1)]; //it records the updates in the logging stage
 int chunk_map[stripe_num*n];
-//int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
-int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
+int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
+//int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
 //int nodes_in_racks[rack_num]={nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack, nodes_per_rack};
 
 
@@ -972,7 +972,7 @@ void trace_analysis_process(char* trace_name, int update_scheme){
         printf("%d\n", parix_sum_cross_traffic);
 
     else if (update_scheme==run_cau){
-        printf("%d\n", cau_sum_cross_traffic);
+        //printf("cau_sum_traffic = %d\n", cau_sum_cross_traffic);
         //printf("cau_replica_traffic=%d\n", cau_replica_traffic);
         //printf("cau_hdg_traffic=%d\n", cau_hdg_traffic);
     }
@@ -1013,11 +1013,11 @@ int main(int argc, char** argv){
    memset(bucket, -1, sizeof(int)*bucket_len*bucket_width);
    memset(cau_updt_tab, -1, sizeof(int)*cau_log_strps*(k+1));
 
-   printf("\n===== %s ======\n", argv[1]);
-   trace_analysis_process(argv[1], run_baseline);
-   trace_analysis_process(argv[1],run_dl);
+   //printf("\n===== %s ======\n", argv[1]);
+   //trace_analysis_process(argv[1], run_baseline);
+   //trace_analysis_process(argv[1],run_dl);
    trace_analysis_process(argv[1],run_cau);
-
+   printf("%.4lf %.4lf\n", cau_hdg_traffic*1.0/cau_sum_cross_traffic, cau_replica_traffic*1.0/cau_sum_cross_traffic);
    return 0;
 }
 
